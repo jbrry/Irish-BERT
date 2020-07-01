@@ -27,3 +27,11 @@ opusfilter configs/opusfilter/paracrawl_ga-en.yaml
 - location: `data/ga/opus/paracrawl`
 - num sentences: TBC.
 ---
+
+#### OSCAR Data
+[OSCAR](https://oscar-corpus.com/) is used to download Irish CommonCrawl data. We are awaiting the un-shuffled version by the authors.
+```bash
+./scripts/download_oscar_data.sh
+```
+- location `data/ga/oscar`
+- num sentences: TBC.
