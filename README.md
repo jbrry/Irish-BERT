@@ -13,19 +13,18 @@ The CoNLL’17 raw corpus contains Wikipedia and CommonCrawl data for Irish. The
 ./scripts/download_conll17_data.sh
 ```
 - location: `data/ga/conll17`
-- num sentences: `1,046,049` (TBC. whether this is line-by-line or paragraph)
----
+- num sentences: `1,046,049`
 
 #### OPUS Data
 
-To download data from OPUS, the [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter) tool can be used. After installing `OpusFilter` (see OpusFilter repository), the tool can be used to download data from a specific directory on OPUS, e.g. Paracrawl:
+To download data from OPUS, the [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter) tool can be used. After installing `OpusFilter` (see OpusFilter repository), the tool can be used to download data from a specific directory on OPUS. See `configs/opusfilter` for example configuration files.
 
 ```bash
 mkdir data/ga/opus/paracrawl
 opusfilter configs/opusfilter/paracrawl_ga-en.yaml
 ```
 - location: `data/ga/opus/paracrawl`
-- num sentences: TBC.
+- num sentences: `357,399`
 ---
 
 #### OSCAR Data
@@ -33,5 +32,5 @@ opusfilter configs/opusfilter/paracrawl_ga-en.yaml
 ```bash
 ./scripts/download_oscar_data.sh
 ```
-- location `data/ga/oscar`
-- num sentences: TBC.
+- location: `data/ga/oscar`
+- num sentences: `178,623`
