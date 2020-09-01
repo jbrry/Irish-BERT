@@ -40,6 +40,9 @@ for compressed in ${data}; do
   
   # convert conllu to text
   perl scripts/conllu_to_text.pl --language=ga_idt < ${conllu_file}  > ${DATASET_DIR}/${filestring}.txt
+
+  # zip text file
+  bzip2 ${DATASET_DIR}/${filestring}.txt
 	
   # use udpipe model to tokenize/segment the raw text:
   #udpipe --tokenize --output horizontal ${UDPIPE_MODEL_DIR}/ga.udpipe ${DATASET_DIR}/${filestring}.txt > ${DATASET_DIR}/${filestring}_tokenised.txt
