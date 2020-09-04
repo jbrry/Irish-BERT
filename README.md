@@ -13,7 +13,19 @@ The CoNLL’17 raw corpus contains Wikipedia and CommonCrawl data for Irish. The
 ./scripts/download_conll17_data.sh
 ```
 - location: `data/ga/conll17`
-- num sentences: `1,046,049`
+
+---
+#### Google Drive Data
+We collected corpora from various locations which are stored on Google Drive (some of these corpora are not allowed to be circulated publicly).
+
+```bash
+# download the data
+./scripts/download_gdrive_data.sh
+
+# gather the various files into a common directory
+find data/ga/gdrive/ -maxdepth 3 -type f | python scripts/gather_gdrive_data.py
+```
+- location: `data/ga/gdrive/gathered`
 
 ---
 #### OPUS Data
@@ -22,11 +34,12 @@ To download data from OPUS, the [OpusFilter](https://github.com/Helsinki-NLP/Opu
 
 ```bash
 # using 'paracrawl' corpus as an example
+
 mkdir data/ga/opus/paracrawl
 ./scripts/download_opus_data.sh paracrawl
 ```
 - location: `data/ga/opus/paracrawl`
-- num sentences: `782,769`
+
 ---
 
 #### OSCAR Data
@@ -35,7 +48,17 @@ mkdir data/ga/opus/paracrawl
 ./scripts/download_oscar_data.sh
 ```
 - location: `data/ga/oscar`
-- num sentences: `178,623`
+
+#### Overview of Data (sentences are not de-duplicated or filtered)
+
+| Corpus       | Number of Sentences |  Size (MB) |
+|--------------|---------------------|------------|
+| CoNLL'17     | 1,824,439           | 136        |
+| Google Drive | 3,073,490           | 216        |
+| ParaCrawl    | 782,769             | 137        |
+| OSCAR        | 366,323             | 88         |
+| Overall      | 6,046,575           | 577        |
+
 
 ### Training a BERT model with Irish data
 Once you have downloaded the above data, the data can then be collected and processed so that it is ready to be fed into BERT. We use the [wiki-bert-pipeline](https://github.com/spyysalo/wiki-bert-pipeline) to tokenise, filter and create vocabularies/training files for BERT. This repository is primarily focused on using Wikipedia data. In order to use external data, see our [forked version of the wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). In particular, you will need to switch to the `external_data` branch.
