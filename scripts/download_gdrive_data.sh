@@ -1,7 +1,13 @@
 #!/bin/bash
 
-# downloads files from Google Drive using rclone
+# downloads files from Google Drive using rclone: https://rclone.org/
 
 # use double-quotes if the path contains spaces
-rclone copy "gdrive:Theme A DCU/Irish_Data/" data/ga_sample/gdrive --bwlimit 1M --transfers 1
+echo "Downloading data from Google Drive ..."
+
+OUTDIR=data/ga/gdrive
+
+rclone copy "gdrive:Theme A DCU/Irish_Data/" $OUTDIR --bwlimit 1M --transfers 1 --progress
+
+echo "Done"
 
