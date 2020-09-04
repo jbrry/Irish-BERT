@@ -49,7 +49,8 @@ mkdir data/ga/opus/paracrawl
 ```
 - location: `data/ga/oscar`
 
-#### Overview of Data (sentences are not de-duplicated or filtered)
+### Overview of Data 
+
 
 | Corpus       | Number of Sentences |  Size (MB) |
 |--------------|---------------------|------------|
@@ -59,6 +60,7 @@ mkdir data/ga/opus/paracrawl
 | OSCAR        | 366,323             | 88         |
 | Overall      | 6,046,575           | 577        |
 
+Note: sentences are not de-duplicated or filtered. As such, they may contain duplicate sentences, large portions of `en` bitext or noisy text.
 
 ### Training a BERT model with Irish data
 Once you have downloaded the above data, the data can then be collected and processed so that it is ready to be fed into BERT. We use the [wiki-bert-pipeline](https://github.com/spyysalo/wiki-bert-pipeline) to tokenise, filter and create vocabularies/training files for BERT. This repository is primarily focused on using Wikipedia data. In order to use external data, see our [forked version of the wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). In particular, you will need to switch to the `external_data` branch.
