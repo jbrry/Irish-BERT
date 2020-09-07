@@ -1,14 +1,29 @@
 # Irish-BERT
 Repository to store helper scripts for creating an Irish BERT model.
 
+### Pre-training Corpora
+We collect raw corpora for pre-training from the following sources:
+- The Irish portion of [CoNLL 2017 Shared Task - Automatically Annotated Raw Texts and Word Embeddings](https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-1989) (CoNLL'17)
+- Scraped Irish data from previous NLP projects and licensed corpora which are stored on Google Drive (Google Drive)
+- Irish data collected from [OPUS](http://opus.nlpl.eu/), e.g. ParaCrawl
+- The un-shuffled version of the Irish data from [OSCAR](https://traces1.inria.fr/oscar/) which filters [Common Crawl](https://commoncrawl.org/) text
+- The `ga` portion of Wikipedia. To extract the `ga` texts we use the [wiki-bert-pipeline](https://github.com/spyysalo/wiki-bert-pipeline)
 
-### Raw Data
-We collect raw corpora from the following sources:
+### Overview of Data 
 
----
+| Corpus       | Number of Sentences |  Size (MB) |
+|--------------|---------------------|------------|
+| CoNLL'17     | 1,824,439           | 136        |
+| Google Drive | 3,073,490           | 216        |
+| ParaCrawl    | 782,769             | 137        |
+| OSCAR        | 366,323             | 88         |
+| Wikipedia    | 443,277             | 34         |
+| Overall      | 6,489,852           | 611        |
+
+NOTE: the above sentences are not de-duplicated or filtered. As such, they may contain duplicate sentences, large portions of `en` bitext or noisy text.
+
+### Steps for Downloading pre-training Corpora
 #### CoNLL'17 Data
-The CoNLL’17 raw corpus contains Wikipedia and CommonCrawl data for Irish. The files are converted from CoNLL-U format to text.
-
 ```bash
 ./scripts/download_conll17_data.sh
 ```
@@ -16,8 +31,6 @@ The CoNLL’17 raw corpus contains Wikipedia and CommonCrawl data for Irish. The
 
 ---
 #### Google Drive Data
-We collected corpora from various locations which are stored on Google Drive (some of these corpora are not allowed to be circulated publicly).
-
 ```bash
 # download the data
 ./scripts/download_gdrive_data.sh
@@ -43,24 +56,13 @@ mkdir data/ga/opus/paracrawl
 ---
 
 #### OSCAR Data
-[OSCAR](https://oscar-corpus.com/) is used to download Irish CommonCrawl data. We are awaiting the un-shuffled version by the authors.
 ```bash
 ./scripts/download_oscar_data.sh
 ```
 - location: `data/ga/oscar`
 
-### Overview of Data 
-
-
-| Corpus       | Number of Sentences |  Size (MB) |
-|--------------|---------------------|------------|
-| CoNLL'17     | 1,824,439           | 136        |
-| Google Drive | 3,073,490           | 216        |
-| ParaCrawl    | 782,769             | 137        |
-| OSCAR        | 366,323             | 88         |
-| Overall      | 6,046,575           | 577        |
-
-Note: sentences are not de-duplicated or filtered. As such, they may contain duplicate sentences, large portions of `en` bitext or noisy text.
+#### Wikipedia Data
+The Wikipedia data is collected later on when running the wiki-bert-pipeline.
 
 ### Training a BERT model with Irish data
 Once you have downloaded the above data, the data can then be collected and processed so that it is ready to be fed into BERT. We use the [wiki-bert-pipeline](https://github.com/spyysalo/wiki-bert-pipeline) to tokenise, filter and create vocabularies/training files for BERT. This repository is primarily focused on using Wikipedia data. In order to use external data, see our [forked version of the wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). In particular, you will need to switch to the `external_data` branch.
