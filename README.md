@@ -6,7 +6,7 @@ We collect raw corpora for pre-training from the following sources:
 - The Irish portion of [CoNLL 2017 Shared Task - Automatically Annotated Raw Texts and Word Embeddings](https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-1989) (CoNLL'17)
 - Scraped Irish data from previous NLP projects and licensed corpora which are stored on Google Drive (Google Drive)
 - Irish data collected from [OPUS](http://opus.nlpl.eu/), e.g. ParaCrawl
-- The un-shuffled version of the Irish data from [OSCAR](https://traces1.inria.fr/oscar/) which filters [Common Crawl](https://commoncrawl.org/) text
+- The un-shuffled version of the Irish data from [OSCAR](https://oscar-corpus.com/) which filters [Common Crawl](https://commoncrawl.org/) data
 - The `ga` portion of Wikipedia. To extract the `ga` texts we use the [wiki-bert-pipeline](https://github.com/spyysalo/wiki-bert-pipeline)
 
 ### Overview of Data 
@@ -54,15 +54,15 @@ mkdir data/ga/opus/paracrawl
 - location: `data/ga/opus/paracrawl`
 
 ---
-
 #### OSCAR Data
 ```bash
 ./scripts/download_oscar_data.sh
 ```
 - location: `data/ga/oscar`
 
+---
 #### Wikipedia Data
-The Wikipedia data is collected later on when running the wiki-bert-pipeline.
+The Wikipedia data is collected later on when running the wiki-bert-pipeline, where the above-listed data will be merged with the Wikipedia data.
 
 ### Training a BERT model with Irish data
 Once you have downloaded the above data, the data can then be collected and processed so that it is ready to be fed into BERT. We use the [wiki-bert-pipeline](https://github.com/spyysalo/wiki-bert-pipeline) to tokenise, filter and create vocabularies/training files for BERT. This repository is primarily focused on using Wikipedia data. In order to use external data, see our [forked version of the wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). In particular, you will need to switch to the `external_data` branch.
