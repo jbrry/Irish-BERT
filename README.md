@@ -78,4 +78,4 @@ You can then launch the main driver script using the `ga` language identifier:
 RUN_external.sh ga
 ```
 
-This will first run a python script `external_scripts/gather_external_data.py` which will collect the corpora you have downloaded using this (Irish-BERT) repository, place them into a directory along with the wikipedia articles and run the rest of the wiki-bert-pipeline mostly as normal.
+This will first run a python script `external_scripts/gather_external_data.py` which will collect the corpora you have downloaded using this (Irish-BERT) repository, place them into a corpus-agonostic directory where the wikipedia articles will also be placed. The rest of the wiki-bert-pipeline will then be run mostly as normal but with the above corpora added.
