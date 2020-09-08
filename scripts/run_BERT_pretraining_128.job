@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#SBATCH -J 128_conll_wiki
+#SBATCH --gres=gpu:rtx6000:1
+
+# location of BERT repository
+WIKI_BERT_DIR=${HOME}/ga_BERT/wiki-bert-pipeline
+BERT_DIR=${WIKI_BERT_DIR}/bert
+DATA_DIR=${WIKI_BERT_DIR}/data/ga/tfrecords/seq-128
+
+OUTPUT_DIR=output/pretraining_output
+mkdir -p $OUTPUT_DIR
+
+python ${BERT_DIR}/run_pretraining.py \
+	--input_file=${DATA_DIR}/* \
+	--output_dir=$OUTPUT_DIR \
+	--do_train=True \
+	--do_eval=False \
+	--bert_config_file=configs/bert/bert_config.json \
+	--train_batch_size=16 \
+	--max_seq_length=128 \
+	--max_predictions_per_seq=20 \
+	--num_train_steps=1000 \
+	--num_warmup_steps=10 \
+	--learning_rate=1e-4
+
