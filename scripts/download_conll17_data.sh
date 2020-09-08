@@ -17,14 +17,18 @@ UDPIPE_ga="https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-
 UDPIPE_MODEL_DIR=udpipe_models
 mkdir -p ${UDPIPE_MODEL_DIR}
 
-echo $'\n'"Downloading UDPipe model for ga..."$'\n'
-curl ${UDPIPE_ga} -o ga.udpipe
-mv ga.udpipe ${UDPIPE_MODEL_DIR}
+if [ -s "$UDPIPE_MODEL_DIR" ]; then
+    echo "$UDPIPE_MODEL_DIR exists, skipping download." >&2
+else
+    echo $'\n'"Downloading UDPipe model for ga..."$'\n'
+    curl ${UDPIPE_ga} -o ga.udpipe
+    mv ga.udpipe ${UDPIPE_MODEL_DIR}
+fi    
 
 # convert files to raw text
 data=$(find "$DATASET_DIR/Irish" -type f -name "*.xz" )
 echo $'\n'"found the following files:"$'\n'
-echo "$data"
+echo "$data"$'\n'
 
 # downloaded files are in x-zip format
 for compressed in ${data}; do
@@ -40,11 +44,11 @@ for compressed in ${data}; do
   
   # convert conllu to text
   perl scripts/conllu_to_text.pl --language=ga_idt < ${conllu_file}  > ${DATASET_DIR}/${filestring}.txt
+	
+  # use udpipe model to tokenize/segment the raw text (otherwise the lines are not line-by-line):
+  udpipe --tokenize --output horizontal ${UDPIPE_MODEL_DIR}/ga.udpipe ${DATASET_DIR}/${filestring}.txt > ${DATASET_DIR}/${filestring}_tokenised.txt
 
   # zip text file
-  bzip2 ${DATASET_DIR}/${filestring}.txt
-	
-  # use udpipe model to tokenize/segment the raw text:
-  #udpipe --tokenize --output horizontal ${UDPIPE_MODEL_DIR}/ga.udpipe ${DATASET_DIR}/${filestring}.txt > ${DATASET_DIR}/${filestring}_tokenised.txt
+  bzip2 ${DATASET_DIR}/${filestring}_tokenised.txt
 
 done
