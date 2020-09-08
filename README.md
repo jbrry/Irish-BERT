@@ -1,7 +1,7 @@
 # Irish-BERT
 Repository to store helper scripts for creating an Irish BERT model.
 
-### Pre-training Corpora
+## Pre-training Corpora
 We collect raw corpora for pre-training from the following sources:
 - The Irish portion of [CoNLL 2017 Shared Task - Automatically Annotated Raw Texts and Word Embeddings](https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-1989) (CoNLL'17)
 - Scraped Irish data from previous NLP projects and licensed corpora which are stored on Google Drive (Google Drive)
@@ -22,7 +22,7 @@ We collect raw corpora for pre-training from the following sources:
 
 NOTE: the above sentences are not de-duplicated or filtered. As such, they may contain duplicate sentences, large portions of `en` bitext or noisy text.
 
-### Steps for Downloading pre-training Corpora
+## Steps for Downloading pre-training Corpora
 #### CoNLL'17 Data
 ```bash
 ./scripts/download_conll17_data.sh
@@ -64,8 +64,9 @@ mkdir data/ga/opus/paracrawl
 #### Wikipedia Data
 The Wikipedia data is collected later on when running the wiki-bert-pipeline, where the above-listed data will be merged with the Wikipedia data.
 
-### Training a BERT model with Irish data
-Once you have downloaded the above data, the data can then be collected and processed so that it is ready to be fed into BERT. We use the [wiki-bert-pipeline](https://github.com/spyysalo/wiki-bert-pipeline) to tokenise, filter and create vocabularies/training files for BERT. This repository is primarily focused on using Wikipedia data. In order to use external data, see our [forked version of the wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). In particular, you will need to switch to the `external_data` branch.
+## Training a BERT model with Irish data
+
+Once you have downloaded the above data, the data can then be collected and processed so that it is ready to be fed into BERT. We use the [wiki-bert-pipeline](https://github.com/spyysalo/wiki-bert-pipeline) to tokenise, filter and create vocabularies and training files for BERT. This wiki-bert-pipeline is primarily focused on using Wikipedia data. In order to use external data, see our [forked version of the wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). In particular, you will need to switch to the `external_data` branch.
 
 ```bash
 git clone https://github.com/jbrry/wiki-bert-pipeline.git
@@ -78,4 +79,21 @@ You can then launch the main driver script using the `ga` language identifier:
 RUN_external.sh ga
 ```
 
-This will first run a python script `external_scripts/gather_external_data.py` which will collect the corpora you have downloaded using this (Irish-BERT) repository, place them into a corpus-agonostic directory where the wikipedia articles will also be placed. The rest of the wiki-bert-pipeline will then be run mostly as normal but with the above corpora added.
+This will first run a python script `external_scripts/gather_external_data.py` which will collect the corpora you have downloaded using this (Irish-BERT) repository and place them into a corpus-agonostic directory where the wikipedia articles will also be placed. The rest of the wiki-bert-pipeline will then be run mostly as normal but with the above corpora added. This will create the necessary vocabulary and `tfrecords` which BERT requires for training.
+
+### Pre-training BERT
+Once you have ran the above pipeline, the `tfrecords` should be created at:
+
+```bash
+/path/to/wiki-bert-pipeline/data/ga/tfrecords
+```
+
+You can then launch the BERT pre-training script:
+```bash
+# Train at seq-len of 128 for the first 90% of steps:
+sbatch scripts/run_BERT_pretraining_128.job
+
+# Train at seq-len of 512 for the last 10% of steps: (TODO)
+sbatch scripts/run_BERT_pretraining_512.job
+
+```
