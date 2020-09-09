@@ -1,14 +1,20 @@
 #!/bin/bash
 
-#SBATCH -J 128_conll_wiki
+#SBATCH -J 128_bert
 #SBATCH --gres=gpu:rtx6000:1
+
+STEPS=$1
+NUM_WARMUP_STEPS=` expr $STEPS / 100`
+
+echo "Training BERT for $STEPS steps"
+echo "using $NUM_WARMUP_STEPS warmup steps ..."
 
 # location of BERT repository
 WIKI_BERT_DIR=${HOME}/ga_BERT/wiki-bert-pipeline
 BERT_DIR=${WIKI_BERT_DIR}/bert
 DATA_DIR=${WIKI_BERT_DIR}/data/ga/tfrecords/seq-128
 
-OUTPUT_DIR=output/pretraining_output
+OUTPUT_DIR=output/pretraining_output_${STEPS}
 mkdir -p $OUTPUT_DIR
 
 python ${BERT_DIR}/run_pretraining.py \
@@ -17,10 +23,10 @@ python ${BERT_DIR}/run_pretraining.py \
 	--do_train=True \
 	--do_eval=False \
 	--bert_config_file=configs/bert/bert_config.json \
-	--train_batch_size=16 \
+	--train_batch_size=32 \
 	--max_seq_length=128 \
 	--max_predictions_per_seq=20 \
-	--num_train_steps=1000 \
-	--num_warmup_steps=10 \
+	--num_train_steps=${STEPS} \
+	--num_warmup_steps=${NUM_WARMUP_STEPS} \
 	--learning_rate=1e-4
 
