@@ -3,7 +3,11 @@
 #SBATCH -J 128_bert
 #SBATCH --gres=gpu:rtx6000:1
 
+test -z $1 && echo "Missing number of pre-training steps"
+test -z $1 && exit 1
 STEPS=$1
+
+# original BERT paper uses 1% as the number of warmup steps
 NUM_WARMUP_STEPS=` expr $STEPS / 100`
 
 echo "Training BERT for $STEPS steps"
@@ -17,6 +21,14 @@ DATA_DIR=${WIKI_BERT_DIR}/data/ga/tfrecords/seq-128
 OUTPUT_DIR=output/pretraining_output_${STEPS}
 mkdir -p $OUTPUT_DIR
 
+if [ $# -gt 1 ]; then
+  echo "More than one argument passed, assuming this is the step number to initialize from"
+  INIT_STEP=$2
+  extra_args="--init_checkpoint=${OUTPUT_DIR}/model.ckpt-$INIT_STEP"
+else
+  extra_args=""
+fi
+
 python ${BERT_DIR}/run_pretraining.py \
 	--input_file=${DATA_DIR}/* \
 	--output_dir=$OUTPUT_DIR \
@@ -28,5 +40,6 @@ python ${BERT_DIR}/run_pretraining.py \
 	--max_predictions_per_seq=20 \
 	--num_train_steps=${STEPS} \
 	--num_warmup_steps=${NUM_WARMUP_STEPS} \
-	--learning_rate=1e-4
+	--learning_rate=1e-4 \
+        ${extra_args}
 
