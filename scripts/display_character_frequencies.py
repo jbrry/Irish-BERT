@@ -44,8 +44,14 @@ def get_char2freq(somefile):
         count occurrences of characters
     '''
     char2freq = collections.defaultdict(lambda: 0)
+    line_no = 0
     while True:
-        line = somefile.readline()
+        line_no += 1
+        try:
+            line = somefile.readline()
+        except UnicodeDecodeError as details:
+            sys.stderr.write('Skipping line %d of %r with unicode errors: %s\n' %(line_no, somefile, details))
+            continue
         if not line:
             break
         for char in line:
