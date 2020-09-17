@@ -15,9 +15,25 @@ import sys
 import unicodedata
 
 # example usage:
-# cat Irish_Data/DGT/DGT_all2015-17.ga | ~/bert/Irish-BERT/scripts/display_character_frequencies.py | less
+# cat Irish_Data/dept_of_Justice/gaois.ga.txt | scripts/display_character_frequencies.py | less
+# cat Irish_Data/dept_of_Justice/gaois.ga.txt | scripts/display_character_frequencies.py expected_characters.txt | less
 
 max_stars = 7
+
+expected_characters = set()
+if len(sys.argv) > 1:
+    if sys.argv[1].startswith('-'):
+        print('Check source code for usage')
+        sys.exit()
+    filename = sys.argv[1]
+    f = open(filename, 'rt')
+    while True:
+        line = f.readline()
+        if not line:
+            break
+        for char in line:
+            expected_characters.add(char)
+    f.close()
 
 char2freq = collections.defaultdict(lambda: 0)
 
@@ -71,6 +87,11 @@ for codepoint in codepoints:
             name = unicodedata.name(char)
         except ValueError:
             name = '<?>'
+    if expected_characters:
+        if char in expected_characters:
+            row.append('normal')
+        else:
+            row.append('unexpec')
     row.append(category)
     row.append(name)
     print('\t'.join(row))
