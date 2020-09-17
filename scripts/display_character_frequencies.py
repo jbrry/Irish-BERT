@@ -15,16 +15,20 @@ import sys
 import unicodedata
 
 # example usage:
-# cat Irish_Data/dept_of_Justice/gaois.ga.txt | scripts/display_character_frequencies.py | less
-# cat Irish_Data/dept_of_Justice/gaois.ga.txt | scripts/display_character_frequencies.py expected_characters.txt | less
+# cat Irish_Data/*/*.txt | scripts/display_character_frequencies.py | less
+# cat Irish_Data/*/*.txt | scripts/display_character_frequencies.py expected_characters.txt | less
+# cat Irish_Data/*/*.txt | scripts/display_character_frequencies.py fairly_clean_data.txt 5 | less
 
 max_stars = 7
 
-expected_characters = set()
-if len(sys.argv) > 1:
-    if sys.argv[1].startswith('-'):
+expected_characters = None
+
+if len(sys.argv) == 2:
+    if sys.argv[1] in ('-h', '--help'):
         print('Check source code for usage')
         sys.exit()
+    expected_characters = set()
+    # read list of expected characters from file
     filename = sys.argv[1]
     f = open(filename, 'rt')
     while True:
@@ -35,22 +39,47 @@ if len(sys.argv) > 1:
             expected_characters.add(char)
     f.close()
 
-char2freq = collections.defaultdict(lambda: 0)
+def get_char2freq(somefile):
+    '''
+        count occurrences of characters
+    '''
+    char2freq = collections.defaultdict(lambda: 0)
+    while True:
+        line = somefile.readline()
+        if not line:
+            break
+        for char in line:
+            codepoint = ord(char)
+            char2freq[codepoint] += 1
+    return char2freq
 
-while True:
-    line = sys.stdin.readline()
-    if not line:
-        break
-    for char in line:
-        codepoint = ord(char)
-        char2freq[codepoint] += 1
+if len(sys.argv) == 3:
+    expected_characters = set()
+    filename = sys.argv[1]
+    reference_threshold = int(sys.argv[2])
+    f = open(filename, 'rt')
+    char2freq = get_char2freq(f)
+    f.close()
+    for k, v in char2freq.items():
+        if v >= reference_threshold:
+            expected_characters.add(chr(k))
+
+# count occurrences of characters in stdin
+
+char2freq = get_char2freq(sys.stdin)
+
+# find maximum frequency to scale visual indicator
 
 max_freq = 0
 for k, v in char2freq.items():
     if v > max_freq:
         max_freq = v
 
+# sort table by code point
+
 codepoints = sorted(list(char2freq.keys()))
+
+# print rows
 
 for codepoint in codepoints:
     row = []
@@ -87,7 +116,7 @@ for codepoint in codepoints:
             name = unicodedata.name(char)
         except ValueError:
             name = '<?>'
-    if expected_characters:
+    if expected_characters is not None:
         if char in expected_characters:
             row.append('normal')
         else:
