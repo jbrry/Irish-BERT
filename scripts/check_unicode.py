@@ -21,7 +21,7 @@ while True:
     try:
         line.decode('UTF-8')
     except:
-        sys.stdout.write('error in line %d at 0x0%X: %s' %(line_no, byte_offset, line))
+        sys.stdout.write('error in line %d at 0x0%X: %r\n' %(line_no, byte_offset, line))
     if not line.endswith('\n'):
         sys.stdout.write('\n')
     byte_offset += len(line)
