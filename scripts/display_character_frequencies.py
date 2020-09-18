@@ -97,7 +97,10 @@ for codepoint in codepoints:
     row = []
     freq = char2freq[codepoint]
     row.append('%d' %freq)
-    log_freq = math.log(freq)/math.log(max_freq)
+    if max_freq <= 1:
+        log_freq = 0
+    else:
+        log_freq = math.log(freq)/math.log(max_freq)
     #row.append('%.3f' %log_freq)
     num_stars = int((0.5+max_stars)*log_freq)
     row.append(num_stars * '*')
