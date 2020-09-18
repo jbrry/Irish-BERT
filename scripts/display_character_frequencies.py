@@ -45,6 +45,7 @@ def get_char2freq(somefile):
     '''
     char2freq = collections.defaultdict(lambda: 0)
     line_no = 0
+    found_error = False
     while True:
         line_no += 1
         try:
@@ -53,12 +54,15 @@ def get_char2freq(somefile):
             sys.stderr.write('Skipping line %d of %r as a unicode error was encountered: %s\n' %(line_no, somefile, details))
             sys.stderr.write('The error may be located in a later line occupying the same data chunk read from this file.\n')
             sys.stderr.write('Further line numbers reported for this file may be inaccurate.\n')
+            found_error = True
             continue
         if not line:
             break
         for char in line:
             codepoint = ord(char)
             char2freq[codepoint] += 1
+    if found_error:
+        sys.stderr.write('Read %d lines from %r.\n' %(line_no-1, somefile))
     return char2freq
 
 if len(sys.argv) == 3:

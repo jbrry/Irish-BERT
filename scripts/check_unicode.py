@@ -26,3 +26,5 @@ while True:
         sys.stdout.write('\n')
     byte_offset += len(line)
 
+sys.stdout.write('Read %d lines.\n' %(line_no-1))
+
