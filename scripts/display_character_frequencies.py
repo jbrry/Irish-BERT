@@ -50,7 +50,9 @@ def get_char2freq(somefile):
         try:
             line = somefile.readline()
         except UnicodeDecodeError as details:
-            sys.stderr.write('Skipping line %d of %r with unicode errors: %s\n' %(line_no, somefile, details))
+            sys.stderr.write('Skipping line %d of %r as a unicode error was encountered: %s\n' %(line_no, somefile, details))
+            sys.stderr.write('The error may be located in a later line occupying the same data chunk read from this file.\n')
+            sys.stderr.write('Further line numbers reported for this file may be inaccurate.\n')
             continue
         if not line:
             break
