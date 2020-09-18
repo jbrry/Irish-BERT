@@ -62,7 +62,7 @@ def get_char2freq(somefile):
 if len(sys.argv) == 3:
     expected_characters = set()
     filename = sys.argv[1]
-    reference_threshold = int(sys.argv[2])
+    reference_threshold = float(sys.argv[2])
     f = open(filename, 'rt')
     char2freq = get_char2freq(f)
     f.close()
