@@ -26,7 +26,7 @@ else
 fi    
 
 # convert files to raw text
-data=$(find "$DATASET_DIR/Irish" -type f -name "*.xz" )
+data=$(find "$DATASET_DIR/Irish" -type f -name "*.xz" | sort )
 echo $'\n'"found the following files:"$'\n'
 echo "$data"$'\n'
 
