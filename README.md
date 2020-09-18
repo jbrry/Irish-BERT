@@ -23,22 +23,19 @@ We collect raw corpora for pre-training from the following sources:
 NOTE: the above sentences are not de-duplicated or filtered. As such, they may contain duplicate sentences, large portions of `en` bitext or noisy text.
 
 ## Steps for Downloading pre-training Corpora
-#### CoNLL'17 Data
-```bash
-./scripts/download_conll17_data.sh
-```
-- location: `data/ga/conll17`
+To download the `conll17`, `gdrive` and `oscar` datasets run the below with the appropriate corpus (or all of them).
 
----
-#### Google Drive Data
 ```bash
-# download the data
-./scripts/download_gdrive_data.sh
-
-# gather the various files into a common directory
-find data/ga/gdrive/ -maxdepth 3 -type f | python scripts/gather_gdrive_data.py
+python scripts/download_handler.py --datasets conll17 gdrive oscar
 ```
-- location: `data/ga/gdrive/gathered`
+
+This should place the downloaded data in the below locations:
+
+```bash
+data/ga/conll17
+data/ga/gdrive/gathered
+data/ga/oscar
+```
 
 ---
 #### OPUS Data
@@ -52,13 +49,6 @@ mkdir data/ga/opus/paracrawl
 ./scripts/download_opus_data.sh paracrawl
 ```
 - location: `data/ga/opus/paracrawl`
-
----
-#### OSCAR Data
-```bash
-./scripts/download_oscar_data.sh
-```
-- location: `data/ga/oscar`
 
 ---
 #### Wikipedia Data
