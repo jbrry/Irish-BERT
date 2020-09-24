@@ -22,7 +22,7 @@ def argparser():
 
 def main(argv):
     args = argparser().parse_args(argv[1:])
-    script_dir="./scripts/"
+    script_dir="./scripts/download_scripts/"
 
     for dataset in args.datasets:
 
