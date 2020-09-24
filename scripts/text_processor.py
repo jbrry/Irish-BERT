@@ -11,6 +11,7 @@ from glob import glob
 from tqdm import tqdm
 import itertools
 import logging
+import subprocess
 
 from pathlib import Path
 from argparse import ArgumentParser
@@ -86,6 +87,10 @@ if __name__ == '__main__':
                 i = str(i)
 
             outfile = out_path + '/' + corpus + "_" + i
+            #with bz2.open(f"{outfile}.bz2", "wb") as fo:
             with open(outfile, 'w', encoding=args.encoding) as fo:
                 for s in split_bucket:
                     fo.write(s)
+            
+            # compress file
+            subprocess.call(f'bzip2 {outfile}', shell=True)
