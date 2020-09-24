@@ -8,6 +8,7 @@ Usage:
 import os
 import sys
 import shutil
+import subprocess
 
 # ignore paracrawl, wikipedia and already processed files
 CORPORA_TO_IGNORE = ['Paracrawl', 'Vicipeid_monolingual', 'processed_ga_files_for_BERT_runs']
@@ -49,3 +50,9 @@ for filepath in lines:
         destination_file = os.path.join(destination_path, filename)
         print(f"Copying file {destination_file}")
         shutil.copyfile(filepath, destination_file)
+
+# compress all files
+print(f"Compressing files in {destination_path}")
+subprocess.call(f'bzip2 {destination_path}/*', shell=True)
+print("Finished compressing files")
+

@@ -36,7 +36,7 @@ def main(argv):
             print("Downloading {} data.".format(dataset))
 
             cmd = script_dir + "download_{}_data.sh".format(dataset)
-            #rcmd = subprocess.call(cmd)
+            rcmd = subprocess.call(cmd)
 
             # gather the various files into a common directory
             fcmd = "find data/ga/gdrive/ -maxdepth 3 -type f | python scripts/gather_gdrive_data.py"
