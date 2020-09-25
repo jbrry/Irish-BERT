@@ -15,11 +15,11 @@ mv ${ARCHIVE} $DATASET_DIR
 # download handle for UDPipe v2.5 Irish model
 UDPIPE_ga="https://lindat.mff.cuni.cz/repository/xmlui/bitstream/handle/11234/1-3131/irish-idt-ud-2.5-191206.udpipe?sequence=39&isAllowed=y"
 UDPIPE_MODEL_DIR=udpipe_models
-mkdir -p ${UDPIPE_MODEL_DIR}
 
 if [ -s "$UDPIPE_MODEL_DIR" ]; then
     echo "$UDPIPE_MODEL_DIR exists, skipping download." >&2
 else
+    mkdir -p ${UDPIPE_MODEL_DIR}
     echo $'\n'"Downloading UDPipe model for ga..."$'\n'
     curl ${UDPIPE_ga} -o ga.udpipe
     mv ga.udpipe ${UDPIPE_MODEL_DIR}
