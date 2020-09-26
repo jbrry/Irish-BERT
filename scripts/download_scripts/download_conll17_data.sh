@@ -6,6 +6,8 @@ ARCHIVE="ud_2017_data.tgz"
 
 DATASET_DIR="data/ga/conll17"
 mkdir -p $DATASET_DIR
+OUT_DIR="data/ga/conll17/raw"
+mkdir -p $OUT_DIR
 
 echo $'\n'"Downloading data from CoNLL 2017..."$'\n'
 curl ${UD_CC} -o ${ARCHIVE}
@@ -46,9 +48,9 @@ for compressed in ${data}; do
   perl scripts/conllu_to_text.pl --language=ga_idt < ${conllu_file}  > ${DATASET_DIR}/${filestring}.txt
 	
   # use udpipe model to tokenize/segment the raw text (otherwise the lines are not line-by-line):
-  udpipe --tokenize --output horizontal ${UDPIPE_MODEL_DIR}/ga.udpipe ${DATASET_DIR}/${filestring}.txt > ${DATASET_DIR}/${filestring}_tokenised.txt
+  udpipe --tokenize --output horizontal ${UDPIPE_MODEL_DIR}/ga.udpipe ${DATASET_DIR}/${filestring}.txt > ${OUT_DIR}/${filestring}_tokenised.txt
 
   # zip text file
-  bzip2 ${DATASET_DIR}/${filestring}_tokenised.txt
+  bzip2 ${OUT_DIR}/${filestring}_tokenised.txt
 
 done

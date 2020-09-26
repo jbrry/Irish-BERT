@@ -18,7 +18,7 @@ en_bitext_filemarker = '.en'
 lines = sys.stdin.readlines()
 print(f"Found {len(lines)} input files")
 
-destination_path="data/ga/gdrive/gathered"
+destination_path="data/ga/gdrive/raw"
 if not os.path.exists(destination_path):
     print(f"Creating target directory at: {destination_path}")
     os.makedirs(destination_path)

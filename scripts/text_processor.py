@@ -54,7 +54,8 @@ if __name__ == '__main__':
             'gdrive',
             'oscar',
         }, nargs='+')
-    parser.add_argument('--bucket-size', type=int, default=10000, help='How many lines to include in each outfile.')
+    parser.add_argument('--bucket-size', type=int, default=100000,
+    help='How many lines to include in each outfile. If you want to just have 1 file, specify a bucket size larger than the number of lines.')
     parser.add_argument('--do-lower-case', action='store_true')
     parser.add_argument('--encoding', default='utf-8')
 
@@ -76,9 +77,15 @@ if __name__ == '__main__':
                 with bz2.open(file_path, 'rt', encoding=args.encoding, errors='ignore') as fi:
                     for i, l in enumerate(tqdm(fi)):
                         sentence_bucket.append(normalize_text(l, args.do_lower_case))
+
+            elif fn.endswith('.gz'):
+                with gzip.open(file_path, 'rt', encoding=args.encoding, errors='ignore') as fi:
+                    for i, l in enumerate(tqdm(fi)):
+                        sentence_bucket.append(normalize_text(l, args.do_lower_case))
         
         print(f"found {len(sentence_bucket)} sentences in {corpus}")
         
+
         split_buckets = grouper(sentence_bucket, args.bucket_size)
         for i, split_bucket in enumerate(split_buckets):
             if i < 10:
@@ -87,7 +94,6 @@ if __name__ == '__main__':
                 i = str(i)
 
             outfile = out_path + '/' + corpus + "_" + i
-            #with bz2.open(f"{outfile}.bz2", "wb") as fo:
             with open(outfile, 'w', encoding=args.encoding) as fo:
                 for s in split_bucket:
                     fo.write(s)
