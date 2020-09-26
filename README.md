@@ -29,12 +29,22 @@ To download the `conll17`, `gdrive` and `oscar` datasets run the below with the 
 python scripts/download_handler.py --datasets conll17 gdrive oscar
 ```
 
-This should place the downloaded data in the below locations:
+This will place the downloaded data in the below location:
 
 ```bash
-data/ga/conll17
-data/ga/gdrive/gathered
-data/ga/oscar
+data/ga/<corpus_name>/raw
+```
+
+Then, combine and remove non UTF-8 lines from the the files in a corpus. You can specify the argument `--bucket-size <n>` to split the corpus into files containing `n` sentences. If you want to produce just one file, specify `n` to be larger than your corpus size.
+
+```bash
+python scripts/text_processor.py --datasets conll17 gdrive oscar
+```
+
+This will place the processed data in the below location:
+
+```bash
+data/ga/<corpus_name>/processed
 ```
 
 ---
