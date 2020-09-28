@@ -1,0 +1,43 @@
+
+# run 'python scripts/text_processor.py --datasets oscar --bucket-size 1000000'
+# to generate 'oscar_00.bz2'
+
+common:
+
+  output_directory: data/ga/oscar/processed
+
+steps:
+
+  - type: filter
+    parameters:
+      inputs: [oscar_00.bz2]
+      outputs: [oscar_00-filtered.bz2]
+      filters:
+        - LengthFilter:
+            unit: word
+            min_length: 1
+            max_length: 100
+
+        - LengthRatioFilter:
+            unit: word
+            threshold: 3
+
+        - LongWordFilter:
+            threshold: 40
+
+        - HtmlTagFilter: {}
+
+        - CharacterScoreFilter:
+            scripts: [Latin]
+            thresholds: [1]
+
+        - LanguageIDFilter:
+            name: langid
+            id_method: langid
+            languages: [ga]
+
+        - LanguageIDFilter:
+            name: cld2
+            id_method: cld2
+            languages: [ga]
+
