@@ -65,10 +65,10 @@ def copy_selected_files(include_files, local_files):
 
 
 if __name__ == '__main__':
-    print('Starting.')
+    print('Starting to gather data.')
     if not os.path.isfile(FILE_LIST):
         print("Please retrieve the filelist using ./scripts/download_gdrive_filelist.sh")
-        exit('Error: {} not found'.format(FILE_LIST))
+        exit(f"Error: {FILE_LIST} not found")
 
     file_list = get_file_list(FILE_LIST)
     include_files, exclude_files, exception_files = split_file_list(file_list)
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 #    print("exception files ({})\n{}".format(len(exception_files), exception_files))
 
     local_files = sys.stdin.readlines()
-    print("Found {} input files".format(len(local_files)))
+    print(f"Found {len(local_files)} input files")
     copy_selected_files(include_files, local_files)
 
-    print('Finished.')
+    print('Finished gathering data.')

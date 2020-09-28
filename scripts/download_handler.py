@@ -1,3 +1,10 @@
+"""
+Download specified datasets/corpora.
+
+Usage: python3 scripts/download_handler.py --datasets <dataset(s)>
+E.g. python3 scripts/download_handler.py --datasets gdrive
+
+"""
 import sys
 import subprocess
 from argparse import ArgumentParser
@@ -33,19 +40,19 @@ def main(argv):
             rcmd = subprocess.call(cmd)
 
         elif dataset == "gdrive":
-            print("Downloading {} data.".format(dataset))
+            print(f"Downloading {dataset} data.")
 
             cmd = script_dir + "download_{}_data.sh".format(dataset)
             rcmd = subprocess.call(cmd)
 
             # gather the various files into a common directory
-            fcmd = "find data/ga/gdrive/ -maxdepth 3 -type f | python scripts/gather_gdrive_data.py"
+            fcmd = "find data/ga/gdrive/ -maxdepth 3 -type f | python3 scripts/gather_gdrive_data_by_filelist.py"
             rcmd = subprocess.call(fcmd, shell=True)
 
         elif dataset == "oscar":
-            print("Downloading {} data.".format(dataset))
+            print(f"Downloading {dataset} data.")
 
-            cmd = script_dir + "download_{}_data.sh".format(dataset)
+            cmd = script_dir + f"download_{dataset}_data.sh"
             rcmd = subprocess.call(cmd)
 
 if __name__ == '__main__':
