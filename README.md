@@ -64,6 +64,21 @@ mkdir data/ga/opus/paracrawl
 #### Wikipedia Data
 The Wikipedia data is collected later on when running the wiki-bert-pipeline, where the above-listed data will be merged with the Wikipedia data.
 
+## Steps for Filtering Corpora
+We use the [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter) tool to filter the corpora. Please follow the instructions in the OpusFilter repository to install OpusFilter. Once you have OpusFilter installed, you need to switch to the `nlingual-rebase` branch to work with data which is not parallel text:
+
+```bash
+cd /path/to/OpusFilter
+git checkout nlingual-rebase
+```
+
+You can then run OpusFilter on some sample files:
+
+```bash
+opusfilter tests/configs/filter_noisy_sample.yaml
+opusfilter tests/configs/filter_clean_sample.yaml
+```
+
 ## Training a BERT model with Irish data
 
 Once you have downloaded the above data, the data can then be collected and processed so that it is ready to be fed into BERT. We use the [wiki-bert-pipeline](https://github.com/spyysalo/wiki-bert-pipeline) to tokenise, filter and create vocabularies and training files for BERT. This wiki-bert-pipeline is primarily focused on using Wikipedia data. In order to use external data, see our [forked version of the wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). In particular, you will need to switch to the `external_data` branch.
