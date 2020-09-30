@@ -1,0 +1,40 @@
+
+common:
+
+  output_directory: tests/data 
+
+steps:
+
+  - type: filter
+    parameters:
+      inputs: [ga_clean_examples.txt]
+      outputs: [ga_clean_examples-filtered.txt]
+      filters:
+        - LengthFilter:
+            unit: word
+            min_length: 1
+            max_length: 100
+
+        - LengthRatioFilter:
+            unit: word
+            threshold: 3
+
+        - LongWordFilter:
+            threshold: 40
+
+        - HtmlTagFilter: {}
+
+        - CharacterScoreFilter:
+            scripts: [Latin]
+            thresholds: [1]
+
+        - LanguageIDFilter:
+            name: langid
+            id_method: langid
+            languages: [ga]
+
+        - LanguageIDFilter:
+            name: cld2
+            id_method: cld2
+            languages: [ga]
+
