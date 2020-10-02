@@ -42,3 +42,6 @@ steps:
             threshold: 0.2
           module: customfilters
 
+        - DigitsFilter:
+            threshold: 0.2
+          module: customfilters
