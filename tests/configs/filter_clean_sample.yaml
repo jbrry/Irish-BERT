@@ -38,3 +38,7 @@ steps:
             id_method: cld2
             languages: [ga]
 
+        - PunctuationFilter:
+            threshold: 0.2
+          module: customfilters
+
