@@ -41,3 +41,11 @@ steps:
             id_method: cld2
             languages: [ga]
 
+        - PunctuationFilter:
+            threshold: 0.4
+          module: customfilters
+
+        - DigitsFilter:
+            threshold: 0.4
+          module: customfilters
+
