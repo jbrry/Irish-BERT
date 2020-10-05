@@ -72,11 +72,15 @@ cd /path/to/OpusFilter
 git checkout nlingual-rebase
 ```
 
-You can then run OpusFilter on some sample files:
+Run OpusFilter on each corpus. Note: OpusFilter expects one single input file, so make sure you have run `scripts/text_processor.py` with a `--bucket-size` value larger than the number of lines in your corpus):
 
 ```bash
-opusfilter tests/configs/filter_noisy_sample.yaml
-opusfilter tests/configs/filter_clean_sample.yaml
+python scripts/filter_corpora.py --datasets conll17 gdrive oscar
+```
+OpusFilter also writes to the same output directory as where the input file is located. So we will break up the filtered file into chunks and place them in a `filtered` directory for each corpus:
+
+```bash
+python scripts/text_processor.py --datasets conll17 gdrive oscar --bucket-size 100000 --process-filtered --input-type processed --output-type filtered
 ```
 
 ## Training a BERT model with Irish data
