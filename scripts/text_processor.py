@@ -57,20 +57,39 @@ if __name__ == '__main__':
     parser.add_argument('--bucket-size', type=int, default=100000,
     help='How many lines to include in each outfile. If you want to just have 1 file, specify a bucket size larger than the number of lines.')
     parser.add_argument('--do-lower-case', action='store_true')
+    parser.add_argument('--process-filtered', action='store_true')
     parser.add_argument('--encoding', default='utf-8')
+    parser.add_argument('--input-type', type=str,
+        choices={
+            'raw',
+            'processed',
+            'filtered',
+            })
+    parser.add_argument('--output-type', type=str,
+        choices={
+            'raw',
+            'processed',
+            'filtered',
+            })
 
     args = parser.parse_args()
-
+    
     sentence_bucket = []
     for corpus in args.datasets:
         print(f"working on {corpus} ...")
 
-        data_path = f"data/ga/{corpus}/raw"
-        out_path = f"data/ga/{corpus}/processed"
+        data_path = f"data/ga/{corpus}/{args.input_type}"
+        out_path = f"data/ga/{corpus}/{args.output_type}"
+
         if not os.path.exists(out_path):
             os.makedirs(out_path)
         
         for fn in os.listdir(data_path):
+            if args.process_filtered:
+                if "filtered" not in fn:
+                    print(f"Skipping {fn}")
+                    continue
+
             file_path = os.path.join(data_path, fn)
             
             if fn.endswith('.bz2'):
