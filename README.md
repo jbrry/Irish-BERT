@@ -38,7 +38,7 @@ data/ga/<corpus_name>/raw
 Then, combine and remove non UTF-8 lines from the the files in a corpus. You can specify the argument `--bucket-size <n>` to split the corpus into files containing `n` sentences. If you want to produce just one file, specify `n` to be larger than your corpus size.
 
 ```bash
-python scripts/text_processor.py --datasets conll17 gdrive oscar
+python scripts/text_processor.py --datasets conll17 gdrive oscar --bucket-size 100000000 --input-type raw --output-type processed
 ```
 
 This will place the processed data in the below location:
