@@ -18,10 +18,6 @@ steps:
             min_length: 1
             max_length: 100
 
-        - LengthRatioFilter:
-            unit: word
-            threshold: 3
-
         - LongWordFilter:
             threshold: 40
 
@@ -29,17 +25,19 @@ steps:
 
         - CharacterScoreFilter:
             scripts: [Latin]
-            thresholds: [1]
+            thresholds: [0.5]
 
         - LanguageIDFilter:
             name: langid
             id_method: langid
             languages: [ga]
+            thresholds: [0.5]
 
         - LanguageIDFilter:
             name: cld2
             id_method: cld2
             languages: [ga]
+            thresholds: [0.5]
 
         - PunctuationFilter:
             threshold: 0.4
