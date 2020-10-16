@@ -15,6 +15,8 @@ import xml.etree.ElementTree
 
 empty_line_after_sentence = False
 empty_line_after_document = False
+print_line_numbers = False
+print_sentence_length = False    # raw length before fixing issues
 print_title = False
 print_author = False
 debug_level = 1
@@ -26,6 +28,10 @@ while len(sys.argv) > 1 and sys.argv[1].startswith('--'):
         empty_line_after_sentence = True
     elif option == '--document-newline':
         empty_line_after_document = True
+    elif option in ('--line', '--line-numbers'):
+        print_line_numbers = True
+    elif option in ('--length', '--sentence-length'):
+        print_sentence_length = True
     elif option == '--title':
         print_title = True
     elif option == '--author':
@@ -44,8 +50,13 @@ while len(sys.argv) > 1 and sys.argv[1].startswith('--'):
 
 num_amp_tokens = '38 60 147 148 205 218 225 233 237 243 250'.split()
 
+start_of_sentence_line = 0
+
 def print_sentence(list_of_tokens):
     global debug_level
+    global print_sentence_length
+    global print_line_numbers
+    global start_of_sentence_line
     text = ' '.join(list_of_tokens)
     if not text or text.isspace():
         if debug_level >= 1:
@@ -84,6 +95,10 @@ def print_sentence(list_of_tokens):
         first = False
     if amp_replacement and debug_level >= 5:
         text = '@@amp: ' + text
+    if print_line_numbers:
+        text = '%d\t%s' %(start_of_sentence_line, text)
+    if print_sentence_length:
+        text = '%d\t%s' %(len(list_of_tokens), text)
     print text
 
 line_no = 0
@@ -143,6 +158,8 @@ while True:
             # glue tag or some other unsupported tag
             raise NotImplementedError
     else:
+        if not sentence:
+            start_of_sentence_line = line_no
         sentence.append(line.split()[0])
 
 if debug_level >= 5:
