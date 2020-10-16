@@ -160,7 +160,7 @@ while True:
     else:
         if not sentence:
             start_of_sentence_line = line_no
-        sentence.append(line.split()[0])
+        sentence.append(line.rstrip().split('\t')[0])
 
 if debug_level >= 5:
     print '@@EOL'
