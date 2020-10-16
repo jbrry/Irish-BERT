@@ -12,7 +12,7 @@ steps:
     parameters:
       inputs: [gdrive_00.bz2]
       outputs: [gdrive_00-filtered.bz2]
-       filters:
+      filters:
         - LengthFilter:
             unit: word
             min_length: 1
