@@ -199,9 +199,11 @@ def get_buckets(lines, number_of_buckets, info = '?'):
         previous_lines = []
         for _ in range(lines_for_this_bucket):
             line = lines[index]
-            # bucket channel 1: lines without whitespace
-            line_without_whitespace = ''.join(line.split())
-            bucket_channel_1.add(line_without_whitespace)
+            # bucket channel 1: lines without whitespace and punctuation
+            line_cleaned = ''.join(line.split())
+            for punctuation in '.?!,;:()\'"-_':
+                line_cleaned = line_cleaned.replace(punctuation, '')
+            bucket_channel_1.add(line_cleaned)
             # bucket channel 2: hash of triplets of lines
             previous_lines.append(line.strip())
             if len(previous_lines) == 3:
@@ -257,7 +259,7 @@ def get_colour_for_pixel(x, y):
             actual_overlap = len(bucket_1 & bucket_2)
             try:
                 fraction = actual_overlap / float(max_overlap_possible)
-                colour.append(0.95 - 0.95 * fraction)
+                colour.append(0.98 - 0.98 * fraction)
             except ZeroDivisionError:
                 colour.append(1.00)
         return colour
