@@ -22,9 +22,9 @@ def print_usage():
     print 'Usage: %s [options] input1.txt input2.txt output.png' %(sys.argv[0].split('/')[-1])
 
 opt_help = False
-opt_debug = False
+opt_verbose = 1
 opt_max_box_size       = 800
-opt_margin             = 6
+opt_margin             = 0
 opt_dither             = True        # use dithering to exceed png's 8-bit colour precision
 opt_preview            = False       # write preview pictures (unfinished lines are transparent)
 opt_num_preview        = 2           # limit the number of preview pictures available at any time
@@ -38,8 +38,14 @@ while len(sys.argv) >= 2 and sys.argv[1][:1] == '-':
     if option in ('--help', '-h'):
         opt_help = True
         break
-    elif option == '--debug':
-        opt_debug = True
+    elif option ==  '--debug':
+        opt_verbose = 5
+    elif option ==  '--progress':
+        opt_verbose = 3
+    elif option ==  '--quiet':
+        opt_verbose = 0
+    elif option ==  '--verbose':
+        opt_verbose = opt_verbose + 1
     elif option in ('--size', '--max-box-size'):
         opt_max_box_size = int(sys.argv[1])
         del sys.argv[1]
@@ -75,8 +81,12 @@ if opt_help:
 colours = {
     'black':     (0.00, 0.00, 0.00),
     'white':     (1.00, 1.00, 1.00),
-    'dark_blue': (0.00, 0.00, 0.35),
+    'light grey': (0.80, 0.80, 0.80),
+    'dark blue': (0.00, 0.00, 0.35),
+    'red':       (1.00, 0.00, 0.00),
 }
+
+background_colour = colours['light grey']
 
 in1 = open(sys.argv[1], 'rb')
 in2 = open(sys.argv[2], 'rb')
@@ -91,11 +101,12 @@ lines2 = in2.readlines()
 in1.close()
 in2.close()
 
-if opt_debug:
-    print('number of lines:', len(lines1), len(lines2))
-
 n_lines_1 = len(lines1)
 n_lines_2 = len(lines2)
+
+if opt_verbose >= 2:
+    sys.stderr.write('Number of lines: %s and %d\n' %(n_lines_1, n_lines_2))
+
 max_buckets_1 = n_lines_1 // 3   # cannot form line triplets with more buckets
 max_buckets_2 = n_lines_2 // 3
 
@@ -109,8 +120,8 @@ scale = max(scale1, scale2)
 n_buckets_1 = int(n_lines_1 / scale)
 n_buckets_2 = int(n_lines_2 / scale)
 
-if opt_debug:
-    print('number of buckets:', n_buckets_1, n_buckets_2)
+if opt_verbose >= 2:
+    sys.stderr.write('Number of buckets: %d and %d\n' %(n_buckets_1, n_buckets_2))
 
 assert n_buckets_1 > 0
 assert n_buckets_2 > 0
@@ -177,7 +188,8 @@ def dither_and_pack(colour, x, y):
     return b''.join(retval)
 
 def get_buckets(lines, number_of_buckets, info = '?'):
-    global opt_debug
+    global opt_verbose
+    global opt_progress_interval
     remaining_lines = len(lines)
     remaining_buckets = number_of_buckets
     retval = []
@@ -185,7 +197,8 @@ def get_buckets(lines, number_of_buckets, info = '?'):
     last_verbose = 0.0
     start_t = time.time()
     while remaining_buckets:
-        if time.time() > last_verbose + opt_progress_interval:
+        if opt_verbose >= 3 \
+        and time.time() > last_verbose + opt_progress_interval:
             sys.stderr.write('%s: %d buckets remaining. %.1f%% done.  \r' %(
                 info,
                 remaining_buckets,
@@ -237,6 +250,35 @@ lines1 = None
 buckets_2 = get_buckets(lines2, n_buckets_2, 'File 2')
 lines2 = None
 
+def p_ce_curve(value):
+    if value < 0.25:
+        return 0.25 * value
+    value = value - 0.25
+    if value < 0.25:
+        return 0.06250 + 0.416666667 * value
+    value = value - 0.25
+    if value < 0.18750:
+        return 0.166666667 + 0.777777776 * value
+    value = value - 0.18750
+    if value < 0.145833333:
+        return 0.31250 + 1.285714289 * value
+    value = value - 0.145833333
+    if value < 0.104166667:
+        return 0.5 + 2.4 * value
+    value = value - 0.104166667
+    retval = 0.75 + 4.0 * value
+    if retval <= 1.0:
+        return retval
+    return 1.0
+
+def contrast_enhance(value):
+    i_range = 0.0353/(0.1765+value)
+    i_range = i_range / 3.0
+    values = []
+    for s_index in range(7):
+        values.append(p_ce_curve(value+i_range*(s_index-3)))
+    return sum(values) / 7.0
+
 def get_colour_for_pixel(x, y):
     global buckets_1
     global buckets_2
@@ -250,7 +292,7 @@ def get_colour_for_pixel(x, y):
         bucket_index_2 = y - opt_margin
         if bucket_index_1 >= n_buckets_1 \
         or bucket_index_2 >= n_buckets_2:
-            return colours['white']
+            return background_colour
         colour = []
         for channel_index in range(3):
             bucket_1 = buckets_1[bucket_index_1][channel_index]
@@ -259,27 +301,27 @@ def get_colour_for_pixel(x, y):
             actual_overlap = len(bucket_1 & bucket_2)
             try:
                 fraction = actual_overlap / float(max_overlap_possible)
-                colour.append(0.98 - 0.98 * fraction)
+                colour.append(contrast_enhance(1.0 - 1.0 * fraction))
             except ZeroDivisionError:
-                colour.append(1.00)
+                return colours['red']
         return colour
     if False:
         # TODO: projection bars
         if x >= opt_margin and y < opt_margin//2:
             bucket_index_1 = x - opt_margin
             if bucket_index_1 >= n_buckets_1:
-                return colours['white']
+                return background_colour
             raise NotImplementedError
         if y >= opt_margin and x < opt_margin//2:
             bucket_index_2 = y - opt_margin
             if bucket_index_2 >= n_buckets_2:
-                return colours['white']
+                return background_colour
             raise NotImplementedError
-    return colours['white']
+    return background_colour
 
 startt = time.time()
 last_verbose = 0.0
-last_preview = 0.0
+last_preview = startt
 preview_threshold = 20.0
 preview_index = 0
 preview_lastnames = []
@@ -302,7 +344,8 @@ for s_index in range(height):
     else:
         eta = now + (now-start_this_line) * remaining
     now = time.time()
-    if now > last_verbose + opt_progress_interval:
+    if opt_verbose >= 3 \
+    and now > last_verbose + opt_progress_interval:
         info = []
         percentage = 100.0 * (1.0+s_index) / float(height)
         info.append('Line %d (%.1f%%)' %(s_index+1, percentage))
@@ -338,20 +381,34 @@ for s_index in range(height):
         else:
             preview_name = 'preview-%s-%03d.png' %(outname[:-4], preview_index)
         write_png(preview_name)
+        if opt_verbose >= 4:
+            if last_verbose:
+                sys.stderr.write('\n')
+            sys.stderr.write('Wrote preview picture %03d.\n' %preview_index)
         preview_lastnames.append(preview_name)
         while len(preview_lastnames) > opt_num_preview:
             # delete previous preview picture
             if os.path.exists(preview_lastnames[0]):
                 os.unlink(preview_lastnames[0])
+                if opt_verbose >= 5:
+                    sys.stderr.write('Removed preview picture %s.\n' %(
+                        preview_lastnames[0][-7:-4]
+                    ))
             del preview_lastnames[0]
         preview_threshold *= 1.414
         last_preview = now
         preview_index += 1
 
-now = time.time()
-duration = now - startt
-sys.stderr.write('\nPrepared lines in %.1f seconds.\n' %duration)
-sys.stderr.write('\n\nWriting PNG file\n\n')
+if last_verbose:
+    sys.stderr.write('\n')
+
+if opt_verbose >= 2:
+    now = time.time()
+    duration = now - startt
+    sys.stderr.write('Prepared lines in %.1f seconds.\n' %duration)
+
+if opt_verbose >= 1:
+    sys.stderr.write('\n\nWriting PNG file\n\n')
 
 write_png(outname)
 
@@ -361,6 +418,7 @@ if opt_clean_up_preview:
         if os.path.exists(preview_name):
             os.unlink(preview_name)
 
-sys.stderr.write('Finished ' + time.ctime(time.time())+'\n')
+if opt_verbose >= 3:
+    sys.stderr.write('Finished ' + time.ctime(time.time())+'\n')
 
 
