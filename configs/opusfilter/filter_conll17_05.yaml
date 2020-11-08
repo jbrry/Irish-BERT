@@ -1,0 +1,49 @@
+
+# run 'python scripts/text_processor.py --datasets conll17 --bucket-size 10000000'
+# to generate 'conll17_00.bz2'
+
+common:
+
+  output_directory: data/ga/conll17/processed
+
+steps:
+
+  - type: filter
+    parameters:
+      inputs: [conll17_00.bz2]
+      outputs: [conll17_00-filtered_05.bz2]
+      filters:
+        - LengthFilter:
+            unit: word
+            min_length: 1
+            max_length: 100
+
+        - LongWordFilter:
+            threshold: 40
+
+        - HtmlTagFilter: {}
+
+        - CharacterScoreFilter:
+            scripts: [Latin]
+            thresholds: [0.5]
+
+        - LanguageIDFilter:
+            name: langid
+            id_method: langid
+            languages: [ga]
+            thresholds: [0.5]
+
+        - LanguageIDFilter:
+            name: cld2
+            id_method: cld2
+            languages: [ga]
+            thresholds: [0.5]
+
+        - PunctuationFilter:
+            threshold: 0.4
+          module: customfilters
+
+        - DigitsFilter:
+            threshold: 0.4
+          module: customfilters
+

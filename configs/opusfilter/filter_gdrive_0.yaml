@@ -1,0 +1,33 @@
+
+# run 'python scripts/text_processor.py --datasets gdrive --bucket-size 10000000'
+# to generate 'gdrive_00.bz2'
+
+common:
+
+  output_directory: data/ga/gdrive/processed
+
+steps:
+
+  - type: filter
+    parameters:
+      inputs: [gdrive_00.bz2]
+      outputs: [gdrive_00-filtered_0.bz2]
+      filters:
+        - LengthFilter:
+            unit: word
+            min_length: 1
+            max_length: 100
+
+        - LongWordFilter:
+            threshold: 40
+
+        - HtmlTagFilter: {}
+
+        - PunctuationFilter:
+            threshold: 0.4
+          module: customfilters
+
+        - DigitsFilter:
+            threshold: 0.4
+          module: customfilters
+
