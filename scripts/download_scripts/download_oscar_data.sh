@@ -27,15 +27,4 @@ else
     wget $IRISH_OSCAR_UNSHUFFLED
 fi  
 
-if [[ -f "ga.txt.gz" ]]; then
-    echo "ga.txt.gz exists. Decompressing."
-    gunzip ga.txt.gz
-fi
-	
-# use udpipe model to tokenize/segment the raw text (otherwise the lines are not line-by-line):
-# this is important for corpus filtering, so we are not discarding more sentences than necessary.
-udpipe --tokenize --output horizontal ${UDPIPE_MODEL_DIR}/ga.udpipe ${OUTDIR}/ga.txt > ${OUTDIR}/ga_tokenised.txt
-
-# zip text file
-bzip2 ${OUTDIR}/ga_tokenised.txt
 
