@@ -21,10 +21,18 @@ def argparser():
         choices={
             'conll17',
             'gdrive',
+            'NCI',
             'oscar',
         },
         nargs='+',
     )
+    parser.add_argument('--filter-threshold', type=str,
+        choices={
+            '0',
+            '05',
+            '1',
+            })
+
     return parser
 
 def main(argv):
@@ -33,7 +41,7 @@ def main(argv):
 
     for dataset in args.datasets:
         print(f"Filtering {dataset} data.")
-        cfg = config_dir + "filter_{}.yaml".format(dataset)
+        cfg = config_dir + "filter_{}_{}.yaml".format(dataset, args.filter_threshold)
         cmd = f"opusfilter {cfg}"
         rcmd = subprocess.call(cmd, shell=True)
 

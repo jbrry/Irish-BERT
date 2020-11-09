@@ -52,6 +52,7 @@ if __name__ == '__main__':
         choices={
             'conll17',
             'gdrive',
+            'NCI',
             'oscar',
         }, nargs='+')
     parser.add_argument('--bucket-size', type=int, default=100000,
@@ -99,6 +100,11 @@ if __name__ == '__main__':
 
             elif fn.endswith('.gz'):
                 with gzip.open(file_path, 'rt', encoding=args.encoding, errors='ignore') as fi:
+                    for i, l in enumerate(tqdm(fi)):
+                        sentence_bucket.append(normalize_text(l, args.do_lower_case))
+
+            elif fn.endswith('.txt'):
+                with open(file_path, 'rt', encoding=args.encoding, errors='ignore') as fi:
                     for i, l in enumerate(tqdm(fi)):
                         sentence_bucket.append(normalize_text(l, args.do_lower_case))
         
