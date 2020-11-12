@@ -11,6 +11,10 @@ test -z $2 && echo "Missing BERT model type: ga_bert or multilingual_bert"
 test -z $2 && exit 1
 BERT_MODEL=$2
 
+test -z $3 && echo "Missing model file description, copy this from wikibirt data dir, e.g. NCI_old"
+test -z $3 && exit 1
+FILE_DESC=$3
+
 # original BERT paper uses 1% as the number of warmup steps
 NUM_WARMUP_STEPS=` expr $STEPS / 100`
 
@@ -20,24 +24,27 @@ echo "using $NUM_WARMUP_STEPS warmup steps ..."
 # location of BERT repository
 WIKI_BERT_DIR="../wiki-bert-pipeline"
 BERT_DIR=${WIKI_BERT_DIR}/bert
-DATA_DIR=${WIKI_BERT_DIR}/data/ga/tfrecords/seq-128
+#DATA_DIR=${WIKI_BERT_DIR}/data/ga/tfrecords/seq-128
+DATA_DIR=${WIKI_BERT_DIR}/data/${FILE_DESC}/ga/tfrecords/seq-128
 
 MODEL_DIR="models/${BERT_MODEL}"
 BERT_CONFIG="${MODEL_DIR}/bert_config.json"
-OUTPUT_DIR="${MODEL_DIR}/pretraining_output_${STEPS}"
+OUTPUT_DIR="${MODEL_DIR}/pretraining_output_${STEPS}-${FILE_DESC}"
 mkdir -p $OUTPUT_DIR
 
 # if using multilingual BERT, first initialise from original checkpoint
 if [ "${BERT_MODEL}" = "multilingual_bert" ]; then   
+  DATA_DIR=${WIKI_BERT_DIR}/data/ga/tfrecords-multilingual_bert/seq-128
+ 
   ln -s $PWD/${MODEL_DIR}/bert_model.ckpt.index $PWD/${OUTPUT_DIR}/bert_model.ckpt.index
-  extra_args="--init_checkpoint=${OUTPUT_DIR}/model.ckpt"
+  extra_args="--init_checkpoint=${OUTPUT_DIR}/bert_model.ckpt"
 else
   extra_args=""
 fi
 
-if [ $# -gt 2 ]; then
-  echo "More than 2 arguments passed, assuming this is the step number to initialize from"
-  INIT_STEP=$3
+if [ $# -gt 3 ]; then
+  echo "More than 3 arguments passed, assuming this is the step number to initialize from"
+  INIT_STEP=$4
   extra_args="--init_checkpoint=${OUTPUT_DIR}/model.ckpt-$INIT_STEP"
 else
   extra_args=""
