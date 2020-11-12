@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IRISH_OSCAR_UNSHUFFLED="https://oscar-public.huma-num.fr/f1f454290e16df612b59e17154d8725a61f42d02/unshuffled/ga.txt.gz" # you need to contact OSCAR maintainers for un-shuffled version
+IRISH_OSCAR_UNSHUFFLED="" # you need to contact OSCAR maintainers for un-shuffled version
 OUTDIR=data/ga/oscar/raw
 
 # download handle for UDPipe v2.5 Irish model
