@@ -1,6 +1,33 @@
 # Irish-BERT
 Repository to store helper scripts for creating an Irish BERT model.
 
+## Set up
+[Conda](https://conda.io/) can be used to set up a virtual environment to use the software.
+
+1.  [Download and install Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
+
+2.  Create a Conda environment with Python 3.7:
+
+    ```
+    conda create -n ga_BERT python=3.7
+    ```
+    
+3.  Activate the Conda environment:
+
+    ```
+    conda activate ga_BERT
+    ```
+    
+There are some other pieces of software you will need to download. We use [rclone](https://rclone.org/) to download files from Google Drive. You will need to download and configure `rclone` to download the `oscar` corpus as well as the files we have collated on Google Drive (bear in mind, these scripts won't work for you if you do not have access to our shared folder on Google Drive). For external researchers outside of this project, these scripts may not be of much relevance to you but they can be modified to work with your own data.
+
+Other dependencies include [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter) and our forked version of [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). Please follow the relevant installation instructions for those libraries. Once they are set up, you will need to install `tensorflow` gpu version:
+
+```
+conda install -c anaconda tensorflow-gpu==1.15
+```
+
+TODO: fine a stable version of `transformers` that can be used to convert checkpoints. This step is only necessary if you want to convert the tensorflow checkpoints to PyTorch to use for downstream evaluation.
+
 ## Pre-training Corpora
 We collect raw corpora for pre-training from the following sources:
 - The Irish portion of [CoNLL 2017 Shared Task - Automatically Annotated Raw Texts and Word Embeddings](https://lindat.mff.cuni.cz/repository/xmlui/handle/11234/1-1989) (CoNLL'17)
@@ -23,10 +50,10 @@ We collect raw corpora for pre-training from the following sources:
 NOTE: the above sentences are not de-duplicated or filtered. As such, they may contain duplicate sentences, large portions of `en` bitext or noisy text.
 
 ## Steps for Downloading pre-training Corpora
-To download the `conll17`, `gdrive` and `oscar` datasets run the below with the appropriate corpus (or all of them).
+To download the `conll17`, `gdrive`, `NCI` and `oscar` datasets run the below with the appropriate corpus (or all of them).
 
 ```bash
-python scripts/download_handler.py --datasets conll17 gdrive oscar
+python scripts/download_handler.py --datasets conll17 gdrive NCI oscar
 ```
 
 This will place the downloaded data in the below location:
@@ -38,7 +65,7 @@ data/ga/<corpus_name>/raw
 Then, combine and remove non UTF-8 lines from the the files in a corpus. You can specify the argument `--bucket-size <n>` to split the corpus into files containing `n` sentences. If you want to produce just one file, specify `n` to be larger than your corpus size.
 
 ```bash
-python scripts/text_processor.py --datasets conll17 gdrive oscar --bucket-size 100000000 --input-type raw --output-type processed
+python scripts/text_processor.py --datasets conll17 gdrive NCI oscar --bucket-size 100000000 --input-type raw --output-type processed
 ```
 
 This will place the processed data in the below location:
@@ -75,12 +102,12 @@ git checkout nlingual-rebase
 Run OpusFilter on each corpus. Note: OpusFilter expects one single input file, so make sure you have run `scripts/text_processor.py` with a `--bucket-size` value larger than the number of lines in your corpus):
 
 ```bash
-python scripts/filter_corpora.py --datasets conll17 gdrive oscar
+python scripts/filter_corpora.py --datasets conll17 gdrive NCI oscar
 ```
 OpusFilter also writes to the same output directory as where the input file is located. So we will break up the filtered file into chunks and place them in a `filtered` directory for each corpus:
 
 ```bash
-python scripts/text_processor.py --datasets conll17 gdrive oscar --bucket-size 100000 --process-filtered --input-type processed --output-type filtered
+python scripts/text_processor.py --datasets conll17 gdrive NCI oscar --bucket-size 100000 --process-filtered --input-type processed --output-type filtered
 ```
 
 ## Training a BERT model with Irish data
