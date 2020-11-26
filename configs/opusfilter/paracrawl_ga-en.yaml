@@ -1,5 +1,5 @@
 common:
-  output_directory: data/ga/opus/paracrawl    
+  output_directory: data/ga/paracrawl   
 
 steps:
   - type: opus_read
@@ -7,7 +7,7 @@ steps:
       corpus_name: ParaCrawl
       source_language: ga
       target_language: en
-      release: v5
+      release: latest
       preprocessing: raw
       src_output: paracrawl.ga.gz
       tgt_output: paracrawl.en.gz
