@@ -13,8 +13,8 @@ test -z $3 && exit 1
 FILE_DESC=$3
 
 MODEL_DIR=models/${BERT_MODEL}
-OUT_DIR=${MODEL_DIR}/pretraining_output_${STEPS}-${FILE_DESC}
-PYTORCH_OUTDIR=${MODEL_DIR}/pytorch_models/pretraining_output_${STEPS}-${FILE_DESC}
+OUT_DIR=${MODEL_DIR}/pretraining_output_${FILE_DESC}_${STEPS}
+PYTORCH_OUTDIR=${MODEL_DIR}/pytorch_models/pretraining_output_${FILE_DESC}_${STEPS}
 
 mkdir -p ${OUT_DIR}
 mkdir -p ${PYTORCH_OUTDIR}
