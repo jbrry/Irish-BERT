@@ -1,5 +1,6 @@
 We use [ParaCrawl](https://paracrawl.eu/) version `7.1` to create a BERT model from scratch in Irish.
 We consider four variants of filtering on the raw ParaCrawl data (where we use the [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter/tree/master/opusfilter) package for filtering):
+It's worth noting that `ParaCrawl 7.1` is initially filtered with the [bicleaner tool](https://github.com/bitextor/bicleaner) so most noisy sentences would have already been removed.
 
 1. No filtering (raw data is used as is)
 2. Basic filtering (sentences over 512 tokens are removed, HTML, sentences which are over 60% punctuation or are over 60% digit characters)
@@ -7,7 +8,7 @@ We consider four variants of filtering on the raw ParaCrawl data (where we use t
 4. Basic filtering and `Latin` script filtering with a threshold of 100% and language ID filters of 80%.
 
 
-We train a BERT model with its own vocabulary using the [wiki-bert-pipeline]().
+We train a BERT model with its own vocabulary using our forked version of the [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline).
 See the `external_data` branch to be able to collect external data and place it into the pipeline.
 The scripts have been modified to work with `opusfilter` as well.
 
