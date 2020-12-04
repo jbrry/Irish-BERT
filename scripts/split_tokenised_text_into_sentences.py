@@ -113,9 +113,6 @@ def split_line(line, debug = False):
     return split_line(left_half) + split_line(right_half)
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == '--self-test':
-        self_test()
-        sys.exit()
     if len(sys.argv) > 1 and sys.argv[1] == '--simple':
         opt_simple = True
     else:
