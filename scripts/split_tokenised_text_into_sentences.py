@@ -64,7 +64,7 @@ def get_first_letter_category(s):
 def contains_letter(s):
     return get_first_letter_category(s) is not None
 
-def split_line(line, debug = True):
+def split_line(line, debug = False):
     global candidate_sep_re
     # (1) score each candidate split point
     candidate_split_points = []
