@@ -20,7 +20,9 @@ Repository to store helper scripts for creating an Irish BERT model.
     
 There are some other pieces of software you will need to download. We use [rclone](https://rclone.org/) to download files from Google Drive. You will need to download and configure `rclone` to download the `oscar` corpus as well as the files we have collated on Google Drive (bear in mind, these scripts won't work for you if you do not have access to our shared folder on Google Drive). For external researchers outside of this project, these scripts may not be of much relevance to you but they can be modified to work with your own data.
 
-Other dependencies include [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter) and our forked version of [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). Please follow the relevant installation instructions for those libraries. Once they are set up, you will need to install `tensorflow` gpu version:
+Other dependencies include [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter),
+including its optional dependency VariKN,
+ and our forked version of [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). Please follow the relevant installation instructions for those libraries. Once they are set up, you will need to install `tensorflow` gpu version:
 
 ```
 conda install -c anaconda tensorflow-gpu==1.15
