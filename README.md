@@ -21,7 +21,7 @@ Repository to store helper scripts for creating an Irish BERT model.
 There are some other pieces of software you will need to download. We use [rclone](https://rclone.org/) to download files from Google Drive. You will need to download and configure `rclone` to download the `oscar` corpus as well as the files we have collated on Google Drive (bear in mind, these scripts won't work for you if you do not have access to our shared folder on Google Drive). For external researchers outside of this project, these scripts may not be of much relevance to you but they can be modified to work with your own data.
 
 Other dependencies include [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter),
-including its optional dependency VariKN,
+including its optional dependency VariKN and eflomal,
  and our forked version of [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). Please follow the relevant installation instructions for those libraries. Once they are set up, you will need to install `tensorflow` gpu version:
 
 ```
@@ -77,19 +77,6 @@ data/ga/<corpus_name>/processed
 ```
 
 ---
-#### OPUS Data
-
-To download data from OPUS, the [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter) tool can be used. After installing `OpusFilter` (see OpusFilter repository), the tool can be used to download data from a specific corpus on OPUS e.g. `paracrawl` (you can add configuration files for other corpora). See `configs/opusfilter` for example configuration files.
-
-```bash
-# using 'paracrawl' corpus as an example
-
-mkdir data/ga/opus/paracrawl
-./scripts/download_opus_data.sh paracrawl
-```
-- location: `data/ga/opus/paracrawl`
-
----
 #### Wikipedia Data
 The Wikipedia data is collected later on when running the wiki-bert-pipeline, where the above-listed data will be merged with the Wikipedia data.
 
@@ -101,16 +88,7 @@ cd /path/to/OpusFilter
 git checkout nlingual-rebase
 ```
 
-Run OpusFilter on each corpus. Note: OpusFilter expects one single input file, so make sure you have run `scripts/text_processor.py` with a `--bucket-size` value larger than the number of lines in your corpus):
-
-```bash
-python scripts/filter_corpora.py --datasets conll17 gdrive NCI oscar
-```
-OpusFilter also writes to the same output directory as where the input file is located. So we will break up the filtered file into chunks and place them in a `filtered` directory for each corpus:
-
-```bash
-python scripts/text_processor.py --datasets conll17 gdrive NCI oscar --bucket-size 100000 --process-filtered --input-type processed --output-type filtered
-```
+The (optional) filtering steps are carried out when the `wiki-bert-pipeline` is run.
 
 ## Training a BERT model with Irish data
 
@@ -122,18 +100,18 @@ cd wiki-bert-pipeline
 git checkout external_data
 ```
 
-You can then launch the main driver script using the `ga` language identifier:
-```bash
-RUN_external.sh ga
+You can then collect the relevant corpora and launch the main driver script as well as specify the type of filtering to be applied. For more information, see the available arguments in [external_scripts/gather_external_data.py](https://github.com/jbrry/wiki-bert-pipeline/blob/external_data/external_scripts/gather_external_data.py) 
+```
+python external_scripts/gather_external_data.py --datasets NCI --input-type processed --filter-type basic+char-@+lang-@ --char-filter-threshold 1.0 --lang-filter-threshold 0.8 --no-wiki
 ```
 
-This will first run a python script `external_scripts/gather_external_data.py` which will collect the corpora you have downloaded using this (Irish-BERT) repository and place them into a corpus-agonostic directory where the wikipedia articles will also be placed. The rest of the wiki-bert-pipeline will then be run mostly as normal but with the above corpora added. This will create the necessary vocabulary and `tfrecords` which BERT requires for training.
+This will first run a python script `external_scripts/gather_external_data.py` which will collect the corpora you have downloaded using this (Irish-BERT) repository and place them into a corpus-agonostic directory where the wikipedia articles will also be placed (`--no-wiki` will skip downloading the Wikipedia files). The rest of the wiki-bert-pipeline will then be run mostly as normal but with the above corpora added. This will create the necessary vocabulary and `tfrecords` which BERT requires for training.
 
 ### Pre-training BERT
 Once you have ran the above pipeline, the `tfrecords` should be created at:
 
 ```bash
-/path/to/wiki-bert-pipeline/data/ga/tfrecords
+/path/to/wiki-bert-pipeline/data/<run_name>/ga/tfrecords
 ```
 
 You can then launch the BERT pre-training script:
