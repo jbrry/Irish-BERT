@@ -8,6 +8,7 @@
 
 OUTDIR=data/ga/sampleNCI/raw
 SHUF_RANDOM_SEED=101
+SAMPLE_SIZE=25000
 
 mkdir -p $OUTDIR
 
@@ -28,7 +29,7 @@ echo "Preparing random numbers for sampling subset of data..."
 
 SHUF_RANDOM_SOURCE=${OUTDIR}/shuf-random-source.tmp
 rm -f ${SHUF_RANDOM_SOURCE}
-for COUNTER in {1..20625} ; do
+for COUNTER in {1..20625} ; do  # emirically found required size +10% safety
     echo "${COUNTER}:${SHUF_RANDOM_SEED}" | \
         sha512sum | cut -c-128 | \
         xxd -r -p >> ${SHUF_RANDOM_SOURCE}
@@ -41,8 +42,8 @@ rclone cat \
     --bwlimit 1000M --transfers 1 | \
     scripts/extract_text_from_nci_vert.py | \
     shuf --random-source=${SHUF_RANDOM_SOURCE} | \
-    tail -n 25000 | \
-    bzip2 > ${OUTDIR}/sample-25000.txt.bz2
+    tail -n ${SAMPLE_SIZE} | \
+    bzip2 > ${OUTDIR}/sample-${SAMPLE_SIZE}.txt.bz2
 
 rm -f ${SHUF_RANDOM_SOURCE}
 
