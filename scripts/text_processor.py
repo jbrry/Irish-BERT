@@ -120,12 +120,7 @@ if __name__ == '__main__':
         
         split_buckets = grouper(sentence_bucket, args.bucket_size)
         for i, split_bucket in enumerate(split_buckets):
-            if i < 10:
-                i = str(0) + str(i)
-            else:
-                i = str(i)
-
-            outfile = out_path + '/' + corpus + "_" + i
+            outfile = f'{out_path}/{corpus}_{i:02d}'
             with open(outfile, 'w', encoding=args.encoding) as fo:
                 for s in split_bucket:
                     fo.write(s)
