@@ -10,6 +10,13 @@ OUTDIR=data/ga/sampleNCI/raw
 SHUF_RANDOM_SEED=101
 SAMPLE_SIZE=25000
 
+OUTFILE=${OUTDIR}/sample-${SAMPLE_SIZE}.txt.bz2
+
+if [ -e $OUTFILE ]; then
+    echo "Reusing existing raw file"
+    exit
+fi
+
 mkdir -p $OUTDIR
 
 echo "Locating data on Google Drive ..."
@@ -43,7 +50,7 @@ rclone cat \
     scripts/extract_text_from_nci_vert.py | \
     shuf --random-source=${SHUF_RANDOM_SOURCE} | \
     tail -n ${SAMPLE_SIZE} | \
-    bzip2 > ${OUTDIR}/sample-${SAMPLE_SIZE}.txt.bz2
+    bzip2 > ${OUTFILE}
 
 rm -f ${SHUF_RANDOM_SOURCE}
 
