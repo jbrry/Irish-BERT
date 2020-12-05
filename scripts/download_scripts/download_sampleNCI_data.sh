@@ -5,10 +5,13 @@
 # also, make sure to put a 0 in front of this filename in gdrive_filelist.csv so that it is not downloaded twice.
 
 # use double-quotes if the path contains spaces
-echo "Downloading data from Google Drive ..."
 
 OUTDIR=data/ga/sampleNCI/raw
+SHUF_RANDOM_SEED=101
+
 mkdir -p $OUTDIR
+
+echo "Locating data on Google Drive ..."
 
 if [[ -n $(rclone lsf "gdrive:Theme A DCU" 2> /dev/null) ]]; then
     THEME_A_DCU="gdrive:Theme A DCU"
@@ -21,7 +24,27 @@ else
     fi
 fi
 
-rclone cat "${THEME_A_DCU}/Irish_Data/ForasNaGaeilge/new-extraction/sample-1000-with-line-numbers.txt" --bwlimit 1000M --transfers 1 | \
-    cut -f2 | bzip2 > ${OUTDIR}/sample-1000.txt.bz2
+echo "Preparing random numbers for sampling subset of data..."
+
+SHUF_RANDOM_SOURCE=${OUTDIR}/shuf-random-source.tmp
+rm -f ${SHUF_RANDOM_SOURCE}
+for COUNTER in {1..20625} ; do
+    echo "${COUNTER}:${SHUF_RANDOM_SEED}" | \
+        sha512sum | cut -c-128 | \
+        xxd -r -p >> ${SHUF_RANDOM_SOURCE}
+done
+
+echo "Downloading data from Google Drive ..."
+
+rclone cat \
+    "${THEME_A_DCU}/Irish_Data/ForasNaGaeilge/9MqDsdf834ms2NfS8L2joi7u_NCIv2.vert" \
+    --bwlimit 1000M --transfers 1 | \
+    scripts/extract_text_from_nci_vert.py | \
+    shuf --random-source=${SHUF_RANDOM_SOURCE} | \
+    tail -n 25000 | \
+    bzip2 > ${OUTDIR}/sample-25000.txt.bz2
+
+rm -f ${SHUF_RANDOM_SOURCE}
 
 echo "Done"
+
