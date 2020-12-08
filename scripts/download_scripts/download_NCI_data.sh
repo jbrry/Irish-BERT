@@ -10,6 +10,17 @@ echo "Downloading data from Google Drive ..."
 OUTDIR=data/ga/NCI/raw
 mkdir -p $OUTDIR
 
-rclone copy "gdrive:Theme A DCU/Irish_Data/ForasNaGaeilge/new-extraction/NCI_extracted_v2.txt" $OUTDIR --bwlimit 1000M --transfers 1
+if [[ -n $(rclone lsf "gdrive:Theme A DCU" 2> /dev/null) ]]; then
+    THEME_A_DCU="gdrive:Theme A DCU"
+else
+    if [[ -n $(rclone lsf "gdrive:Theme A/Theme A DCU" 2> /dev/null) ]]; then
+        THEME_A_DCU="gdrive:Theme A/Theme A DCU"
+    else
+        echo "Theme A DCU folder not found"
+        exit 1
+    fi
+fi
+
+rclone copy "${THEME_A_DCU}/Irish_Data/ForasNaGaeilge/new-extraction/NCI_extracted_v2.txt" $OUTDIR --bwlimit 1000M --transfers 1
 
 echo "Done"

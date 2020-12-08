@@ -23,6 +23,7 @@ def argparser():
             'gdrive',
             'NCI',
             'oscar',
+            'sampleNCI',
         },
         nargs='+',
     )
@@ -34,7 +35,7 @@ def main(argv):
 
     for dataset in args.datasets:
 
-        if dataset == "conll17":
+        if dataset in ("conll17", "NCI", "oscar", "sampleNCI"):
             print(f"Downloading {dataset} data.")
             cmd = script_dir + f"download_{dataset}_data.sh"
             rcmd = subprocess.call(cmd)
@@ -49,15 +50,8 @@ def main(argv):
             fcmd = "find data/ga/gdrive/ -maxdepth 3 -type f | python3 scripts/gather_gdrive_data_by_filelist.py"
             rcmd = subprocess.call(fcmd, shell=True)
 
-        elif dataset == "NCI":
-            print(f"Downloading {dataset} data.")
-            cmd = script_dir + f"download_{dataset}_data.sh"
-            rcmd = subprocess.call(cmd)
-
-        elif dataset == "oscar":
-            print(f"Downloading {dataset} data.")
-            cmd = script_dir + f"download_{dataset}_data.sh"
-            rcmd = subprocess.call(cmd)
+        else:
+            raise ValueError('Missing code for dataset %r' %dataset)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
