@@ -58,6 +58,7 @@ if __name__ == '__main__':
             'NCI',
             'NCI_old',
             'oscar',
+            'paracrawl',
         }, nargs='+')
     parser.add_argument('--bucket-size', type=int, default=100000,
     help='How many lines to include in each outfile. If you want to just have 1 file, specify a bucket size larger than the number of lines.')
@@ -76,15 +77,8 @@ if __name__ == '__main__':
             'processed',
             'filtered',
             })
-    parser.add_argument('--filter-type', type=str, # all filtering will be done in wikibert
-        choices={
-            'basic',
-            '0.5',
-            '0.8',
-            })
 
     args = parser.parse_args()
-    
     
     for corpus in args.datasets:
         print(f"working on {corpus} ...")
