@@ -127,8 +127,8 @@ while True:
             sentence = []
             if empty_line_after_sentence:
                 print
-            elif empty_line_after_document and line.startswith('</doc>'):
-                print
+        if empty_line_after_document and line.startswith('</doc>'):
+            print
         if line.startswith('<doc') and (print_title or print_author) and valid_utf8:
             line = line.rstrip()
             if debug_level >= 4:
