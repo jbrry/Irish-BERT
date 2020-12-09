@@ -68,6 +68,8 @@ def split_line(line, debug = False):
     global candidate_sep_re
     # (1) score each candidate split point
     candidate_split_points = []
+    if debug:
+        print('Scanning for split points...')
     for match in candidate_sep_re.finditer(line):
         punctuation = match.group(1)  # first parenthesised subgroup
         left_half_without_punct = line[:match.start()]
@@ -81,7 +83,9 @@ def split_line(line, debug = False):
         left_half = line[:match.end()].rstrip()
         right_half = line[match.end():]
         if debug:
-            print('halves: %r + %r' %(left_half, right_half))
+            print('halves (%d, %d): %r + %r' %(
+                len(left_half), len(right_half), left_half, right_half
+            ))
         # reject if a half does not contain any letters
         if not contains_letter(left_half) \
         or not contains_letter(right_half):
@@ -107,8 +111,11 @@ def split_line(line, debug = False):
     if not candidate_split_points:
         return [line]
     # (2) find best split point
+    candidate_split_points.sort()
     best_split = candidate_split_points[0]
-    _, left_half, right_half = best_split
+    balance, left_half, right_half = best_split
+    if debug:
+        print('Best balance', balance)
     # resursively split each half
     return split_line(left_half) + split_line(right_half)
 
@@ -117,10 +124,13 @@ def main():
         opt_simple = True
     else:
         opt_simple = False
+    in_count = 0
     while True:
         line = sys.stdin.readline()
         if not line:
             break
+        in_count += 1
+        #print('Input line:', in_count)
         if opt_simple:
             for sep in ('.', '?', '!'):
                 # scan for `sep` surrounded by spaces and
@@ -130,9 +140,13 @@ def main():
                 line = line.replace(' %s ' %sep, ' %s\n' %sep)
             sys.stdout.write(line)
         else:
+            out_count = 0
             for new_line in split_line(line.rstrip()):
+                out_count += 1
+                #print('Output line:', out_count)
                 sys.stdout.write(new_line)
                 sys.stdout.write('\n')
+                #print()
 
 if __name__ == '__main__':
     main()
