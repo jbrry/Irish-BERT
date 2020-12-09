@@ -26,8 +26,11 @@ fi
 rclone cat \
     "${THEME_A_DCU}/Irish_Data/ForasNaGaeilge/9MqDsdf834ms2NfS8L2joi7u_NCIv2.vert" \
     --bwlimit 1000M --transfers 1 | \
-    scripts/extract_text_from_nci_vert.py --document-newline > ${OUTFILE}
+    scripts/extract_text_from_nci_vert.py --document-newline | \
+    bzip2 > ${OUTFILE}.bz2
 
-bzip2 ${OUTFILE} 
+# do not leave behind uncompressed file from a run with
+# an older version of this script
+rm -f ${OUTFILE}
 
 echo "Done"
