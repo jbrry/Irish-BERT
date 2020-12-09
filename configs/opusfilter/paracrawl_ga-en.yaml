@@ -1,5 +1,5 @@
 common:
-  output_directory: data/ga/paracrawl   
+  output_directory: data/ga/paracrawl/raw   
 
 steps:
   - type: opus_read

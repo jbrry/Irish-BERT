@@ -8,6 +8,8 @@
 echo "Downloading data from Google Drive ..."
 
 OUTDIR=data/ga/NCI/raw
+OUTFILE=${OUTDIR}/NCI_v2.txt
+
 mkdir -p $OUTDIR
 
 if [[ -n $(rclone lsf "gdrive:Theme A DCU" 2> /dev/null) ]]; then
@@ -21,6 +23,11 @@ else
     fi
 fi
 
-rclone copy "${THEME_A_DCU}/Irish_Data/ForasNaGaeilge/new-extraction/NCI_extracted_v2.txt" $OUTDIR --bwlimit 1000M --transfers 1
+rclone cat \
+    "${THEME_A_DCU}/Irish_Data/ForasNaGaeilge/9MqDsdf834ms2NfS8L2joi7u_NCIv2.vert" \
+    --bwlimit 1000M --transfers 1 | \
+    scripts/extract_text_from_nci_vert.py --document-newline > ${OUTFILE}
+
+bzip2 ${OUTFILE} 
 
 echo "Done"

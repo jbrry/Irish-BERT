@@ -23,6 +23,7 @@ def argparser():
             'gdrive',
             'NCI',
             'oscar',
+            'paracrawl',
             'sampleNCI',
         },
         nargs='+',
@@ -35,7 +36,7 @@ def main(argv):
 
     for dataset in args.datasets:
 
-        if dataset in ("conll17", "NCI", "oscar", "sampleNCI"):
+        if dataset in ("conll17", "NCI", "oscar", "paracrawl", "sampleNCI"):
             print(f"Downloading {dataset} data.")
             cmd = script_dir + f"download_{dataset}_data.sh"
             rcmd = subprocess.call(cmd)
@@ -44,7 +45,7 @@ def main(argv):
             print(f"Downloading {dataset} data.")
             # download all files from gdrive
             cmd = script_dir + f"download_{dataset}_data.sh"
-            rcmd = subprocess.call(cmd)
+            rcmd = subprocess.call(cmd, shell=True)
 
             # gather the various files into a common directory
             fcmd = "find data/ga/gdrive/ -maxdepth 3 -type f | python3 scripts/gather_gdrive_data_by_filelist.py"

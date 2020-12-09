@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 echo "Running OpusFilter to collect Opus data ..."
 
@@ -7,6 +7,7 @@ TRG=en
 
 # OPUS corpus name, e.g. 'paracrawl'
 CORPUS=paracrawl
+
 echo "Using corpus $CORPUS"
 mkdir -p data/ga/$CORPUS
 
