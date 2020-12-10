@@ -74,7 +74,21 @@ def write_roman(num):
 for i in range(1,3000):
     roman_numbers.add(write_roman(i))
 
-def get_first_letter_category(s):
+def get_first_letter_category(s, skip_enumeration = False):
+    if skip_enumeration:
+        new_tokens = []
+        for token in s.split():
+            if token.startswith('(') \
+            and token.endswith(')') \
+            and ((len(token) == 3 \
+            and unicodedata.category(token[1]).startswith('L')) \
+            or token[1:-1].upper() in roman_numbers):
+                # Roman number in brackets or single letter in brackets
+                # --> remove first token
+                pass
+            else:
+                new_tokens.append(token)
+        s = ' '.join(new_tokens)
     for c in s:
         category = unicodedata.category(c)
         if category.startswith('L'):
@@ -104,9 +118,9 @@ def check_split(best_split, left_half, right_half, left_half_without_punct, debu
             print('rejected as at least one half has no letters')
         return best_split
     # reject if the first letter of the right half is a lowercase letter
-    if get_first_letter_category(right_half) == 'Ll':
+    if get_first_letter_category(right_half, skip_enumeration = True) == 'Ll':
         if debug:
-            print('rejected as the right half\'s first letter is lowercase')
+            print('rejected as the right half\'s first letter, skipping enumerations, is lowercase')
         return best_split
     # reject if the left half only contains a Roman number
     # (in addition to the full-stop)
