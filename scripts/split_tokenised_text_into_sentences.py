@@ -67,7 +67,8 @@ def contains_letter(s):
 def split_line(line, debug = False):
     global candidate_sep_re
     # (1) score each candidate split point
-    candidate_split_points = []
+    #     and find best split point
+    best_split = None
     if debug:
         print('Scanning for split points...')
     for match in candidate_sep_re.finditer(line):
@@ -106,13 +107,14 @@ def split_line(line, debug = False):
             continue
         # prefer a split point balancing the lengths of the halves
         balance = abs(len(left_half) - len(right_half))
-        candidate_split_points.append((balance, left_half, right_half))
+        candidate_split = (balance, left_half, right_half)
+        if best_split is None \
+        or candidate_split < best_split:
+            best_split = candidate_split
     # recursion ends if there is no split point
-    if not candidate_split_points:
+    if best_split is None:
         return [line]
     # (2) find best split point
-    candidate_split_points.sort()
-    best_split = candidate_split_points[0]
     balance, left_half, right_half = best_split
     if debug:
         print('Best balance', balance)
