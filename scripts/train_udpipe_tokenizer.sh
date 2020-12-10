@@ -2,15 +2,13 @@
 
 # keep track of where this script was run from to store the UDPipe model.
 ROOTDIR=`pwd`
-echo $ROOTDIR
 
-# the tokenizer will be trained on en_ewt and ga_idt UD v2.7.
 DATADIR=data/ud-treebanks
 mkdir -p $DATADIR
 cd $DATADIR
 
 # this will download the latest version from GitHub.
-git clone https://github.com/UniversalDependencies/UD_Irish-IDT
+git clone https://github.com/UniversalDependencies/UD_Irish-IDT.git
 git clone https://github.com/UniversalDependencies/UD_English-EWT.git
 
 OUTDIR=UD_Irish-IDT+UD_English-EWT
