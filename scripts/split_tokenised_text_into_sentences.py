@@ -157,6 +157,7 @@ def split_line(line, debug = False, is_left_most = True):
         bonus = 0
         if punctuation == '.':
             tokens = left_half_without_punct.split()
+            rtokens = right_half.split()
             try:
                 last_token = tokens[-1]
             except IndexError:
@@ -176,10 +177,17 @@ def split_line(line, debug = False, is_left_most = True):
                 if debug:
                     print('rejected due to last token', last_token)
                 continue
+            if last_token in ('No', 'Vol') \
+            and rtokens \
+            and is_decimal_number(rtokens[0]):
+                if debug:
+                    print('rejected due to last token', last_token,
+                          'followed by number', rtokens[0]
+                    )
+                continue
             if is_decimal_number(last_token):
                 # shorter numbers are more likely to be part of an enumeration
                 bonus = -30 / math.log(1+int(last_token.strip()))
-                rtokens = right_half.split()
                 if len(tokens) > 2 and tokens[-2].endswith('.') \
                 and tokens[-3] in ('Airteagal', ) \
                 and len(rtokens) > 2 and is_decimal_number(rtokens[0]) \
