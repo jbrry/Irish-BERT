@@ -105,6 +105,17 @@ def is_decimal_number(s):
             return False
     return len(s) > 0
 
+def is_quote(token):
+    if token in ("''", "``", "'", '"'):
+        return True
+    if len(token) != 1:
+        return False
+    try:
+        name = unicodedata.name(token)
+    except:
+        return False
+    return 'QUOTATION MARK' in name
+
 def check_split(best_split, left_half, right_half, left_half_without_punct, debug, bonus):
     if debug:
         print('halves (%d, %d): %r + %r' %(
@@ -155,9 +166,22 @@ def split_line(line, debug = False, is_left_most = True):
             print('split point', count)
             print('lhwp: %r, punct: %r' %(left_half_without_punct, punctuation))
         bonus = 0
+        tokens = left_half_without_punct.split()
+        rtokens = right_half.split()
+        if len(rtokens) > 2 \
+        and is_quote(rtokens[0]) \
+        and is_quote(rtokens[1]):
+            # consider splitting between the quotes with higher priority
+            left_half2 = '%s %s %s' %(left_half_without_punct, punctuation, rtokens[0])
+            best_split = check_split(
+                best_split,
+                left_half2,
+                ' '.join(rtokens[1:]),
+                left_half_without_punct,
+                debug,
+                5
+            )
         if punctuation == '.':
-            tokens = left_half_without_punct.split()
-            rtokens = right_half.split()
             try:
                 last_token = tokens[-1]
             except IndexError:
