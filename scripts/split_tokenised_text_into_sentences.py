@@ -106,7 +106,7 @@ def is_decimal_number(s):
     return len(s) > 0
 
 def is_quote(token):
-    if token in ("''", "``", "'", '"'):
+    if token in ("''", "``", "`", "'", '"'):
         return True
     if len(token) != 1:
         return False
@@ -116,6 +116,14 @@ def is_quote(token):
         return False
     return 'QUOTATION MARK' in name
 
+def is_ellipsis(s):
+    if s.count('.') < 2:
+        return False
+    for c in s:
+        if not is_quote(c) and not c in '. ':
+            return False
+    return True
+
 def check_split(best_split, left_half, right_half, left_half_without_punct, debug, bonus):
     if debug:
         print('halves (%d, %d): %r + %r' %(
@@ -123,10 +131,18 @@ def check_split(best_split, left_half, right_half, left_half_without_punct, debu
         ))
     # reject if a half does not contain any letters
     # (this covers cases where the left half is only a decimal number)
+    tokens = left_half.split()
+    n_left = len(tokens)
     if not contains_letter(left_half) \
-    or not contains_letter(right_half):
+    and (n_left <= 2 or (tokens[-3] in "#'" and is_decimal_number(tokens[-2]))):
         if debug:
-            print('rejected as at least one half has no letters')
+            print('rejected as left half has no letters and is short')
+        return best_split
+    if not contains_letter(right_half) \
+    and (len(right_half.split()) < 3 \
+    or is_ellipsis(right_half)):
+        if debug:
+            print('rejected as right half has no letters and is short or is an ellipsis')
         return best_split
     # reject if the first letter of the right half is a lowercase letter
     if get_first_letter_category(right_half, skip_enumeration = True) == 'Ll':
@@ -139,6 +155,29 @@ def check_split(best_split, left_half, right_half, left_half_without_punct, debu
     if candidate_number in roman_numbers:
         if debug:
             print('rejected as left half is a Roman number')
+        return best_split
+    # reject if inside brackets and brackets not far away
+    for obr, cbr in [
+        ('(', ')'),
+        ('[', ']'),
+        ('{', '}'),
+        ('<', '>'),
+    ]:
+        opened_at = left_half.rfind(obr)
+        if opened_at < 0 or left_half.rfind(cbr) > opened_at:
+            continue
+        text_after_bracket = left_half[opened_at+1:]
+        opened_at = right_half.find(obr)
+        if opened_at < 0:
+            opened_at = len(right_half)
+        closed_at = right_half.find(cbr)
+        if closed_at < 0 or opened_at < closed_at:
+            continue
+        if 3 + text_after_bracket.count(' ') + \
+           right_half[:closed_at].count(' ') > 20:
+            continue
+        if debug:
+            print('rejected as inside brackets %r and %r' %(obr, cbr))
         return best_split
     # prefer a split point balancing the lengths of the halves
     balance = abs(len(left_half) - len(right_half))
@@ -169,14 +208,21 @@ def split_line(line, debug = False, is_left_most = True):
         tokens = left_half_without_punct.split()
         rtokens = right_half.split()
         if len(rtokens) > 2 \
-        and is_quote(rtokens[0]) \
-        and is_quote(rtokens[1]):
-            # consider splitting between the quotes with higher priority
-            left_half2 = '%s %s %s' %(left_half_without_punct, punctuation, rtokens[0])
+        and ((is_quote(rtokens[0]) and is_quote(rtokens[1])) \
+        or rtokens[0] in ')]}>' \
+        or (rtokens[0] in '?!' and rtokens[0] == punctuation)):
+            # consider splitting between the quotes
+            # (or after the closing bracket or repeated question or
+            # exclamation marks) with higher priority
+            n = 1
+            while rtokens[0] in '?!' and rtokens[0] == punctuation \
+            and len(rtokens) > n and rtokens[n] == punctuation:
+                n = n + 1
+            left_half2 = '%s %s %s' %(left_half_without_punct, punctuation, ' '.join(rtokens[:n]))
             best_split = check_split(
                 best_split,
                 left_half2,
-                ' '.join(rtokens[1:]),
+                ' '.join(rtokens[n:]),
                 left_half_without_punct,
                 debug,
                 5
@@ -201,9 +247,9 @@ def split_line(line, debug = False, is_left_most = True):
                 if debug:
                     print('rejected due to last token', last_token)
                 continue
-            if last_token in ('No', 'Vol') \
+            if last_token in ('No', 'Vol', 'Iml') \
             and rtokens \
-            and is_decimal_number(rtokens[0]):
+            and is_decimal_number(rtokens[0][0]):
                 if debug:
                     print('rejected due to last token', last_token,
                           'followed by number', rtokens[0]
