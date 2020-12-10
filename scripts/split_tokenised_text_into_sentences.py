@@ -15,6 +15,7 @@
 '''
 
 import collections
+import math
 import os
 import re
 import sys
@@ -34,6 +35,7 @@ Options:
 
     --debug                 Add step-by-step debugging output
 
+    --help                  Show this message
 """)
 
 
@@ -82,7 +84,47 @@ def get_first_letter_category(s):
 def contains_letter(s):
     return get_first_letter_category(s) is not None
 
-def split_line(line, debug = False):
+def is_decimal_number(s):
+    s = s.strip()
+    for c in s:
+        if c not in '0123456789':
+            return False
+    return len(s) > 0
+
+def check_split(best_split, left_half, right_half, left_half_without_punct, debug, bonus):
+    if debug:
+        print('halves (%d, %d): %r + %r' %(
+            len(left_half), len(right_half), left_half, right_half
+        ))
+    # reject if a half does not contain any letters
+    # (this covers cases where the left half is only a decimal number)
+    if not contains_letter(left_half) \
+    or not contains_letter(right_half):
+        if debug:
+            print('rejected as at least one half has no letters')
+        return best_split
+    # reject if the first letter of the right half is a lowercase letter
+    if get_first_letter_category(right_half) == 'Ll':
+        if debug:
+            print('rejected as the right half\'s first letter is lowercase')
+        return best_split
+    # reject if the left half only contains a Roman number
+    # (in addition to the full-stop)
+    candidate_number = left_half_without_punct.strip().upper()
+    if candidate_number in roman_numbers:
+        if debug:
+            print('rejected as left half is a Roman number')
+        return best_split
+    # prefer a split point balancing the lengths of the halves
+    balance = abs(len(left_half) - len(right_half))
+    score   = balance - bonus
+    candidate_split = (score, balance, left_half, right_half)
+    if best_split is None \
+    or candidate_split < best_split:
+        best_split = candidate_split
+    return best_split
+
+def split_line(line, debug = False, is_left_most = True):
     global candidate_sep_re
     # (1) score each candidate split point
     #     and find best split point
@@ -94,58 +136,61 @@ def split_line(line, debug = False):
         count += 1
         punctuation = match.group(1)  # first parenthesised subgroup
         left_half_without_punct = line[:match.start()]
+        right_half = line[match.end():]
         if debug:
             print('split point', count)
             print('lhwp: %r, punct: %r' %(left_half_without_punct, punctuation))
+        bonus = 0
         if punctuation == '.':
-            last_token = left_half_without_punct.split()[-1]
+            tokens = left_half_without_punct.split()
+            try:
+                last_token = tokens[-1]
+            except IndexError:
+                last_token = None
+            if is_left_most and count == 1 and last_token == '1' \
+            and len(tokens) > 1 and tokens[-2] not in ',;':
+                # candidate for start of an enumeration following a heading
+                left_half2 = ' '.join(tokens[:-1])
+                best_split = check_split(
+                    best_split, left_half2,
+                    '%s . %s' %(last_token, line[match.end():]),
+                    left_half2, debug,
+                    10
+                )
             if last_token in ('DR', 'Prof', 'nDr'):
                 # reject split point
                 if debug:
                     print('rejected due to last token', last_token)
                 continue
+            if is_decimal_number(last_token):
+                # shorter numbers are more likely to be part of an enumeration
+                bonus = -30 / math.log(1+int(last_token.strip()))
+                rtokens = right_half.split()
+                if len(tokens) > 2 and tokens[-2].endswith('.') \
+                and tokens[-3] in ('Airteagal', ) \
+                and len(rtokens) > 2 and is_decimal_number(rtokens[0]) \
+                and rtokens[1] == '.' \
+                and get_first_letter_category(right_half) != 'Ll':
+                    #        [-3]      [-2] [-1] punct
+                    # ... in Airteagal  K.  16    .    4 . Beidh feidhm ...
+                    bonus = 8
         left_half = line[:match.end()].rstrip()
-        right_half = line[match.end():]
-        if debug:
-            print('halves (%d, %d): %r + %r' %(
-                len(left_half), len(right_half), left_half, right_half
-            ))
-        # reject if a half does not contain any letters
-        # (this covers cases where the left half is only a decimal number)
-        if not contains_letter(left_half) \
-        or not contains_letter(right_half):
-            if debug:
-                print('rejected as at least one half has no letters')
-            continue
-        # reject if the first letter of the right half is a lowercase letter
-        if get_first_letter_category(right_half) == 'Ll':
-            if debug:
-                print('rejected as the right half\'s first letter is lowercase')
-            continue
-        # reject if the left half only contains a Roman number
-        # (in addition to the full-stop)
-        candidate_number = left_half_without_punct.strip().upper()
-        if candidate_number in roman_numbers:
-            if debug:
-                print('rejected as left half is a Roman number')
-            continue
-        # prefer a split point balancing the lengths of the halves
-        balance = abs(len(left_half) - len(right_half))
-        candidate_split = (balance, left_half, right_half)
-        if best_split is None \
-        or candidate_split < best_split:
-            best_split = candidate_split
+        best_split = check_split(
+            best_split, left_half, right_half, left_half_without_punct, debug,
+            bonus,
+        )
     # recursion ends if there is no split point
     if best_split is None:
         if debug:
             print('no split point found')
         return [line]
     # (2) find best split point
-    balance, left_half, right_half = best_split
+    score, balance, left_half, right_half = best_split
     if debug:
-        print('Best balance', balance)
+        print('Best score %d with balance %d' %(score, balance))
     # resursively split each half
-    return split_line(left_half, debug) + split_line(right_half, debug)
+    return split_line(left_half,  debug, is_left_most) + \
+           split_line(right_half, debug, False)
 
 
 def main():
