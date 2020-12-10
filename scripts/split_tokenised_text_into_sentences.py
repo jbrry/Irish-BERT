@@ -15,9 +15,27 @@
 '''
 
 import collections
+import os
 import re
 import sys
 import unicodedata
+
+
+def print_usage():
+    print('Usage: %s [options] < in.txt > out.txt' %(os.path.split(sys.argv[0])[-1]))
+    print("""
+Options:
+
+    --newline               Add empty line after processing an input line
+
+    --simple                Select basic algorithm used in November 2020
+
+    --verbose               Add line numbers and empty lines to output
+
+    --debug                 Add step-by-step debugging output
+
+""")
+
 
 candidate_sep_re = re.compile(' ([.?!]) ')
 
@@ -71,15 +89,20 @@ def split_line(line, debug = False):
     best_split = None
     if debug:
         print('Scanning for split points...')
+    count = 0
     for match in candidate_sep_re.finditer(line):
+        count += 1
         punctuation = match.group(1)  # first parenthesised subgroup
         left_half_without_punct = line[:match.start()]
         if debug:
+            print('split point', count)
             print('lhwp: %r, punct: %r' %(left_half_without_punct, punctuation))
         if punctuation == '.':
             last_token = left_half_without_punct.split()[-1]
             if last_token in ('DR', 'Prof', 'nDr'):
                 # reject split point
+                if debug:
+                    print('rejected due to last token', last_token)
                 continue
         left_half = line[:match.end()].rstrip()
         right_half = line[match.end():]
@@ -88,22 +111,23 @@ def split_line(line, debug = False):
                 len(left_half), len(right_half), left_half, right_half
             ))
         # reject if a half does not contain any letters
+        # (this covers cases where the left half is only a decimal number)
         if not contains_letter(left_half) \
         or not contains_letter(right_half):
             if debug:
-                print('no letters')
+                print('rejected as at least one half has no letters')
             continue
         # reject if the first letter of the right half is a lowercase letter
         if get_first_letter_category(right_half) == 'Ll':
             if debug:
-                print('lowercase letter')
+                print('rejected as the right half\'s first letter is lowercase')
             continue
         # reject if the left half only contains a Roman number
         # (in addition to the full-stop)
         candidate_number = left_half_without_punct.strip().upper()
         if candidate_number in roman_numbers:
             if debug:
-                print('Roman number')
+                print('rejected as left half is a Roman number')
             continue
         # prefer a split point balancing the lengths of the halves
         balance = abs(len(left_half) - len(right_half))
@@ -113,26 +137,57 @@ def split_line(line, debug = False):
             best_split = candidate_split
     # recursion ends if there is no split point
     if best_split is None:
+        if debug:
+            print('no split point found')
         return [line]
     # (2) find best split point
     balance, left_half, right_half = best_split
     if debug:
         print('Best balance', balance)
     # resursively split each half
-    return split_line(left_half) + split_line(right_half)
+    return split_line(left_half, debug) + split_line(right_half, debug)
+
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == '--simple':
-        opt_simple = True
-    else:
-        opt_simple = False
+    opt_help    = False
+    opt_simple  = False
+    opt_newline = False
+    opt_debug   = False
+    opt_verbose = False
+    while len(sys.argv) >= 2 and sys.argv[1][:1] == '-':
+        option = sys.argv[1]
+        option = option.replace('_', '-')
+        del sys.argv[1]
+        if option in ('--help', '-h'):
+            opt_help = True
+            break
+        elif option in ('--simple', '--november-2020'):
+            opt_simple = True
+        elif option == '--newline':
+            opt_newline = True
+        elif option == '--debug':
+            opt_debug = True
+        elif option == '--verbose':
+            opt_verbose = True
+        else:
+            print('Unsupported option %s' %option)
+            opt_help = True
+            break
+    if len(sys.argv) != 1:
+        opt_help = True
+    if opt_help:
+        print_usage()
+        sys.exit(0)
     in_count = 0
     while True:
         line = sys.stdin.readline()
         if not line:
             break
         in_count += 1
-        #print('Input line:', in_count)
+        if opt_debug or opt_verbose:
+            print('<', in_count)
+            print(line.rstrip())
+            print()
         if opt_simple:
             for sep in ('.', '?', '!'):
                 # scan for `sep` surrounded by spaces and
@@ -143,12 +198,19 @@ def main():
             sys.stdout.write(line)
         else:
             out_count = 0
-            for new_line in split_line(line.rstrip()):
+            splits = split_line(line.rstrip(), debug = opt_debug)
+            number_of_splits = len(splits)
+            if opt_debug:
+                print()
+            for new_line in splits:
                 out_count += 1
-                #print('Output line:', out_count)
-                sys.stdout.write(new_line)
-                sys.stdout.write('\n')
-                #print()
+                if opt_debug or opt_verbose:
+                    print('> %d/%d' %(out_count, number_of_splits))
+                print(new_line)
+                if opt_debug or opt_verbose:
+                    print()
+        if opt_debug or opt_verbose or opt_newline:
+            print()
 
 if __name__ == '__main__':
     main()
