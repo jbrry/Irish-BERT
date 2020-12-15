@@ -25,6 +25,7 @@ def argparser():
             'oscar',
             'paracrawl',
             'sampleNCI',
+            'twitter',
         },
         nargs='+',
     )
@@ -36,7 +37,7 @@ def main(argv):
 
     for dataset in args.datasets:
 
-        if dataset in ("conll17", "NCI", "oscar", "paracrawl", "sampleNCI"):
+        if dataset in ("conll17", "NCI", "oscar", "paracrawl", "sampleNCI", "twitter"):
             print(f"Downloading {dataset} data.")
             cmd = script_dir + f"download_{dataset}_data.sh"
             rcmd = subprocess.call(cmd)
