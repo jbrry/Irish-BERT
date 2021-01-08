@@ -21,8 +21,7 @@ Repository to store helper scripts for creating an Irish BERT model.
 There are some other pieces of software you will need to download. We use [rclone](https://rclone.org/) to download files from Google Drive. You will need to download and configure `rclone` to download the `oscar` corpus as well as the files we have collated on Google Drive (bear in mind, these scripts won't work for you if you do not have access to our shared folder on Google Drive). For external researchers outside of this project, these scripts may not be of much relevance to you but they can be modified to work with your own data.
 
 Other dependencies include [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter),
-including its optional dependency VariKN and eflomal,
- and our forked version of [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). Please follow the relevant installation instructions for those libraries. Once they are set up, you will need to install `tensorflow` gpu version:
+including its optional dependencies `VariKN` and `eflomal`, and our forked version of [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline). Please follow the relevant installation instructions in the READMEs for those libraries. Once they are set up, you will need to install `tensorflow` gpu version:
 
 ```
 conda install -c anaconda tensorflow-gpu==1.15
@@ -55,7 +54,7 @@ NOTE: the above sentences are not de-duplicated or filtered. As such, they may c
 To download the `conll17`, `gdrive`, `NCI` and `oscar` datasets run the below with the appropriate corpus (or all of them).
 
 ```bash
-python scripts/download_handler.py --datasets conll17 gdrive NCI oscar
+python scripts/download_handler.py --datasets conll17 gdrive NCI oscar paracrawl
 ```
 
 This will place the downloaded data in the below location:
@@ -67,7 +66,7 @@ data/ga/<corpus_name>/raw
 Then, combine and remove non UTF-8 lines from the the files in a corpus. You can specify the argument `--bucket-size <n>` to split the corpus into files containing `n` sentences. If you want to produce just one file, specify `n` to be larger than your corpus size.
 
 ```bash
-python scripts/text_processor.py --datasets conll17 gdrive NCI oscar --bucket-size 100000000 --input-type raw --output-type processed
+python scripts/text_processor.py --datasets conll17 gdrive NCI oscar paracrawl --bucket-size 100000 --input-type raw --output-type processed
 ```
 
 This will place the processed data in the below location:
