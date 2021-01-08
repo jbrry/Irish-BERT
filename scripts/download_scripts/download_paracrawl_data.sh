@@ -9,13 +9,18 @@ TRG=en
 CORPUS=paracrawl
 
 echo "Using corpus $CORPUS"
-mkdir -p data/ga/$CORPUS
+OUTDIR=data/ga/$CORPUS/raw
 
-OUTDIR=data/ga/$CORPUS
+mkdir -p $OUTDIR
 
 CONFIG=configs/opusfilter/${CORPUS}_${SRC}-${TRG}.yaml
 echo "Using configuration file: $CONFIG"
 
 opusfilter $CONFIG
+
+cd $OUTDIR
+
+# remove all files but the paracrawl.ga.gz
+rm ParaCrawl_latest_raw_en.zip ParaCrawl_latest_xml_en-ga.xml.gz paracrawl.en.gz ParaCrawl_latest_raw_ga.zip
 
 echo "Done"

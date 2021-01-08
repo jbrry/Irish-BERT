@@ -37,7 +37,9 @@ done
 
 cd $ROOTDIR
 
-UDPIPE_MODEL=udpipe_models/ga_idt+en_ewt.udpipe
 COMBINED_FILE=$DATADIR/$OUTFILE
 
-udpipe --train --tokenize $UDPIPE_MODEL $COMBINED_FILE
+mkdir -p udpipe_models
+
+cat $COMBINED_FILE | udpipe --tagger none --parser none --train udpipe_models/ga_en_combined.udpipe
+
