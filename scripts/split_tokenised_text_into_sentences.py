@@ -103,6 +103,8 @@ def is_decimal_number(s):
     for c in s:
         if c not in '0123456789':
             return False
+    if s.startswith('0') and len(s) > 1:
+        return False
     return len(s) > 0
 
 def is_quote(token):
@@ -182,6 +184,8 @@ def check_split(best_split, left_half, right_half, left_half_without_punct, debu
     # prefer a split point balancing the lengths of the halves
     balance = abs(len(left_half) - len(right_half))
     score   = balance - bonus
+    if debug:
+        print('Candidate score %d with balance %d' %(score, balance))
     candidate_split = (score, balance, left_half, right_half)
     if best_split is None \
     or candidate_split < best_split:
@@ -256,8 +260,10 @@ def split_line(line, debug = False, is_left_most = True):
                     )
                 continue
             if is_decimal_number(last_token):
-                # shorter numbers are more likely to be part of an enumeration
-                bonus = -30 / math.log(1+int(last_token.strip()))
+                # smaller positive numbers are more likely to be part of an enumeration
+                dec_number = int(last_token.strip())
+                if dec_number >= 1:
+                    bonus = -30 / math.log(1.0 + dec_number)
                 if len(tokens) > 2 and tokens[-2].endswith('.') \
                 and tokens[-3] in ('Airteagal', ) \
                 and len(rtokens) > 2 and is_decimal_number(rtokens[0]) \
