@@ -58,12 +58,13 @@ if __name__ == '__main__':
             'NCI',
             'NCI_old',
             'oscar',
+            'twitter',
             'paracrawl',
+            'sampleNCI',
         }, nargs='+')
     parser.add_argument('--bucket-size', type=int, default=100000,
     help='How many lines to include in each outfile. If you want to just have 1 file, specify a bucket size larger than the number of lines.')
     parser.add_argument('--do-lower-case', action='store_true')
-    #parser.add_argument('--process-filtered', action='store_true')
     parser.add_argument('--encoding', default='utf-8')
     parser.add_argument('--input-type', type=str,
         choices={
@@ -109,7 +110,10 @@ if __name__ == '__main__':
                 with open(file_path, 'rt', encoding=args.encoding, errors='ignore') as fi:
                     for i, l in enumerate(tqdm(fi)):
                         sentence_bucket.append(normalize_text(l, args.do_lower_case))
-            
+
+            # Create empty line as document boundary.
+            sentence_bucket.append("\n")
+
         print(f"found {len(sentence_bucket)} sentences in {corpus}")
         
         split_buckets = grouper(sentence_bucket, args.bucket_size)
