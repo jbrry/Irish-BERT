@@ -10,6 +10,7 @@
 
 import sys
 import xml.etree.ElementTree
+from collections import defaultdict
 
 # defaults below can be changed with command line options
 
@@ -19,6 +20,7 @@ print_line_numbers = False
 print_sentence_length = False    # raw length before fixing issues
 print_title = False
 print_author = False
+count_events = False
 debug_level = 1
 
 while len(sys.argv) > 1 and sys.argv[1].startswith('--'):
@@ -36,6 +38,8 @@ while len(sys.argv) > 1 and sys.argv[1].startswith('--'):
         print_title = True
     elif option == '--author':
         print_author = True
+    elif option == '--count-events':
+        count_events = True
     elif option == '--quiet':
         debug_level = 0
     elif option == '--verbose':
@@ -48,6 +52,8 @@ while len(sys.argv) > 1 and sys.argv[1].startswith('--'):
     else:
         raise ValueError('unknown option')
 
+event_counter = defaultdict(lambda: 0)
+
 num_amp_tokens = '38 60 147 148 205 218 225 233 237 243 250'.split()
 
 start_of_sentence_line = 0
@@ -57,16 +63,22 @@ def print_sentence(list_of_tokens):
     global print_sentence_length
     global print_line_numbers
     global start_of_sentence_line
+    global count_events
+    global event_counter
     text = ' '.join(list_of_tokens)
     if not text or text.isspace():
         if debug_level >= 1:
             sys.sdterr.write('Empty sentence with non-empty list of tokens.\n')
+        if count_events:
+            event_counter[('text', 'empty')] += 1
         return
     amp_replacement = False
     first = True
     while first or modified:
         backup = text
         if '&quot;' in text:
+            if count_events:
+                event_counter[('replace', '&quot;')] += text.count('&quot;')
             text = text.replace('&quot;',  '"')
             if debug_level >= 5:
                 text = '@@amp.quot: ' + text
@@ -79,12 +91,16 @@ def print_sentence(list_of_tokens):
         ]:
             source = '& %s ;' %token
             if source in text:
+                if count_events:
+                    event_counter[('replace', source)] += text.count(source)
                 text = text.replace(source,  char)
                 if debug_level >= 5:
                     text = '@@amp_%s: %s' %(token, text)
         for token in num_amp_tokens:
             source = '& #%s ;' %token
             if source in text:
+                if count_events:
+                    event_counter[('replace', source)] += text.count(source)
                 text = text.replace(source, unichr(int(token)).encode('utf-8'))
                 if debug_level >= 5:
                     text = '@@amp_#%s: %s' %(token, text)
@@ -93,6 +109,8 @@ def print_sentence(list_of_tokens):
             amp_replacement = True
         # add code here for other types of replacements not involing ampersands
         first = False
+    if count_events and modified:
+        event_counter[('text', 'modified segment')] += 1
     if amp_replacement and debug_level >= 5:
         text = '@@amp: ' + text
     if print_line_numbers:
@@ -110,18 +128,26 @@ while True:
     if not line:
         if sentence:
             print_sentence(sentence)
+            if count_events:
+                event_counter[('text', 'segment')] += 1
         if debug_level >= 4:
             print '@@EOF'
         break
     try:
         line.decode('UTF-8')
         valid_utf8 = True
+        if count_events:
+            event_counter[('line', 'valid utf-8')] += 1
     except:
         if debug_level >= 1:
             sys.stderr.write('UTF-8 error in line %d at 0x0%X: %r\n' %(line_no, byte_offset, line))
         valid_utf8 = False
+        if count_events:
+            event_counter[('line', 'invalid utf-8')] += 1
     byte_offset += len(line)
     if line.startswith('<'):
+        if count_events:
+            event_counter[('tag', line.split()[0])] += 1
         if sentence:
             print_sentence(sentence)
             sentence = []
@@ -136,6 +162,8 @@ while True:
             if ' & ' in line:
                 if debug_level >= 2:
                     sys.stderr.write('Found ` & ` in xml tag. Escaping it as ` &amp; `: %s\n' %line)
+                if count_events:
+                    event_counter[('tag', 'fix &')] += line.count(' & ')
                 line = line.replace(' & ', ' &amp; ')
             doc_attributes = xml.etree.ElementTree.fromstring(
                 '<?xml version="1.0" encoding="utf-8"?>%s</doc>' %line
@@ -160,7 +188,17 @@ while True:
     else:
         if not sentence:
             start_of_sentence_line = line_no
+            if count_events:
+                event_counter[('text', 'first token')] += 1
         sentence.append(line.rstrip().split('\t')[0])
+        if count_events:
+            event_counter[('text', 'input row')] += 1
 
 if debug_level >= 5:
     print '@@EOL'
+
+if count_events:
+    for key in sorted(event_counter.keys()):
+        print(key, event_counter[key])
+
+
