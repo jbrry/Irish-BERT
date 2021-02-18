@@ -3,7 +3,7 @@
 # Runs BERT on a TPU node
 # ./scripts/run_BERT_pretraining_128_TPU.sh 5000 tpu-gabert gabert conll17_gdrive_NCI_oscar_paracrawl_filtering_None
 
-test -z $1 && echo "Missing number of pre-training steps, e.g. '900000'"
+test -z $1 && echo "Missing number of pre-training steps, e.g. '1000000'"
 test -z $1 && exit 1
 STEPS=$1
 
@@ -19,14 +19,15 @@ test -z $4 && echo "Missing model file description, e.g. list of corpora and fil
 test -z $4 && exit 1
 FILE_DESC=$4
 
-# original BERT paper uses 1% as the number of warmup steps
-NUM_WARMUP_STEPS=` expr $STEPS / 100`
+
+# We are only doing 100,000 steps at seq_len=512
+NUM_WARMUP_STEPS=10000
 
 echo "Training BERT for $STEPS steps"
 echo "using $NUM_WARMUP_STEPS warmup steps ..."
 
 BERT_DIR=${HOME}/gabert/bert
-DATA_DIR="gs://$BUCKET_NAME/data/gabert/pretraining_data/$FILE_DESC/ga/tfrecords/seq-128"
+DATA_DIR="gs://$BUCKET_NAME/data/gabert/pretraining_data/$FILE_DESC/ga/tfrecords/seq-512"
 OUTPUT_DIR="gs://$BUCKET_NAME/data/gabert/model_output/${FILE_DESC}"
 
 BERT_CONFIG=${HOME}/gabert/Irish-BERT/models/ga_bert/bert_config.json
@@ -47,10 +48,9 @@ python3 ${BERT_DIR}/run_pretraining.py \
 	--do_eval=False \
 	--bert_config_file=${BERT_CONFIG} \
 	--train_batch_size=64 \
-	--max_seq_length=128 \
-	--max_predictions_per_seq=20 \
+	--max_seq_length=512 \
+	--max_predictions_per_seq=77 \
 	--num_train_steps=${STEPS} \
-    	--save_checkpoint_steps=100000 \
 	--num_warmup_steps=${NUM_WARMUP_STEPS} \
 	--learning_rate=1e-4 \
     	--use_tpu=True \
