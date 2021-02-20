@@ -33,6 +33,9 @@ Options:
 
     --verbose               Add line numbers and empty lines to output
 
+    --wrap  NUMBER          Warp output at NUMBER characters. Does not apply
+                            to debugging output. (Default: no wrapping)
+
     --debug                 Add step-by-step debugging output
 
     --help                  Show this message
@@ -290,6 +293,25 @@ def split_line(line, debug = False, is_left_most = True):
     return split_line(left_half,  debug, is_left_most) + \
            split_line(right_half, debug, False)
 
+def print_line(line, wrap):
+    if not wrap:
+        print(line)
+    on_this_line = 0
+    tokens = []
+    for token in line.split():
+        needed_space = len(token)
+        if tokens:
+            needed_space += 1
+        if on_this_line + needed_space > wrap:
+            # cannot fit this token on the current line
+            if tokens:
+                print(' '.join(tokens))
+            tokens = []
+            on_this_line = 0
+        tokens.append(token)
+        on_this_line += needed_space
+    if tokens:
+        print(' '.join(tokens))
 
 def main():
     opt_help    = False
@@ -297,6 +319,7 @@ def main():
     opt_newline = False
     opt_debug   = False
     opt_verbose = False
+    opt_wrap    = 0
     while len(sys.argv) >= 2 and sys.argv[1][:1] == '-':
         option = sys.argv[1]
         option = option.replace('_', '-')
@@ -308,6 +331,9 @@ def main():
             opt_simple = True
         elif option == '--newline':
             opt_newline = True
+        elif option == '--wrap':
+            opt_wrap = int(sys.argv[1])
+            del sys.argv[1]
         elif option == '--debug':
             opt_debug = True
         elif option == '--verbose':
@@ -329,7 +355,7 @@ def main():
         in_count += 1
         if opt_debug or opt_verbose:
             print('<', in_count)
-            print(line.rstrip())
+            print_line(line.rstrip(), opt_wrap)
             print()
         if opt_simple:
             for sep in ('.', '?', '!'):
@@ -338,7 +364,7 @@ def main():
                 # (occurrences attach to or inside a token
                 # are not touched)
                 line = line.replace(' %s ' %sep, ' %s\n' %sep)
-            sys.stdout.write(line)
+            print_line(line.rstrip(), opt_wrap)
         else:
             out_count = 0
             splits = split_line(line.rstrip(), debug = opt_debug)
@@ -349,7 +375,7 @@ def main():
                 out_count += 1
                 if opt_debug or opt_verbose:
                     print('> %d/%d' %(out_count, number_of_splits))
-                print(new_line)
+                print_line(new_line, opt_wrap)
                 if opt_debug or opt_verbose:
                     print()
         if opt_debug or opt_verbose or opt_newline:
