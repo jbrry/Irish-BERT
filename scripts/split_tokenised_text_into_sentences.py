@@ -46,6 +46,8 @@ Options:
 
 candidate_sep_re = re.compile(' ([.?!]) ')
 
+closing_brackets = set(')]}>')
+
 roman_numbers = set()
 
 # code for wite_roman() from
@@ -218,7 +220,10 @@ def split_line(line, debug = False, is_left_most = True):
         rtokens = right_half.split()
         if len(rtokens) > 2 \
         and ((is_quote(rtokens[0]) and is_quote(rtokens[1])) \
-        or rtokens[0] in ')]}>' \
+        or (rtokens[0] == ')' and tokens and tokens[0] == '(') \
+        or (rtokens[0] == ']' and tokens and tokens[0] == '[') \
+        or (rtokens[0] == '}' and tokens and tokens[0] == '{') \
+        or (rtokens[0] == '>' and tokens and tokens[0] == '<') \
         or (rtokens[0] in '?!' and rtokens[0] == punctuation)):
             # consider splitting between the quotes
             # (or after the closing bracket or repeated question or
@@ -236,6 +241,10 @@ def split_line(line, debug = False, is_left_most = True):
                 debug,
                 5
             )
+        if rtokens[0] in closing_brackets:
+            # do not split at punctuation followed by a closing bracket,
+            # except when promoted above
+            continue
         if punctuation == '.':
             try:
                 last_token = tokens[-1]
