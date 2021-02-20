@@ -273,6 +273,18 @@ def split_line(line, debug = False, is_left_most = True):
                 if debug:
                     print('rejected due to M./m. sh .')
                 continue
+            if len(last_token) == 1 \
+            and last_token >= 'A' \
+            and last_token <= 'Z' \
+            and (len(rtokens[0]) > 3 \
+            or (len(rtokens) >= 3 and len(rtokens[0]) == 1 \
+            and rtokens[1] == '.' and len(rtokens[2]) > 3) \
+            or (len(rtokens) >= 2 and len(rtokens[0]) == 2 \
+            and rtokens[0][1] == '.' and len(rtokens[1]) > 3)):
+                # reject split point
+                if debug:
+                    print('rejected due to suspected initial')
+                continue
             if last_token in abbreviations:
                 # reject split point
                 if debug:
