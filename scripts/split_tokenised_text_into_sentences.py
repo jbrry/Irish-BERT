@@ -28,6 +28,8 @@ def print_usage():
 Options:
 
     --newline               Add empty line after processing an input line
+                            (specify twice to also add a newline after
+                            every new sentence boundary)
 
     --simple                Select basic algorithm used in November 2020
 
@@ -316,7 +318,7 @@ def print_line(line, wrap):
 def main():
     opt_help    = False
     opt_simple  = False
-    opt_newline = False
+    opt_newline = 0
     opt_debug   = False
     opt_verbose = False
     opt_wrap    = 0
@@ -330,7 +332,7 @@ def main():
         elif option in ('--simple', '--november-2020'):
             opt_simple = True
         elif option == '--newline':
-            opt_newline = True
+            opt_newline += 1
         elif option == '--wrap':
             opt_wrap = int(sys.argv[1])
             del sys.argv[1]
@@ -376,9 +378,9 @@ def main():
                 if opt_debug or opt_verbose:
                     print('> %d/%d' %(out_count, number_of_splits))
                 print_line(new_line, opt_wrap)
-                if opt_debug or opt_verbose:
+                if opt_debug or opt_verbose or opt_newline == 2:
                     print()
-        if opt_debug or opt_verbose or opt_newline:
+        if opt_debug or opt_verbose or opt_newline == 1:
             print()
 
 if __name__ == '__main__':
