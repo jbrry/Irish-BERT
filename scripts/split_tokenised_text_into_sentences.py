@@ -48,6 +48,11 @@ candidate_sep_re = re.compile(' ([.?!]) ')
 
 closing_brackets = set(')]}>')
 
+abbreviations = set([
+    'DR', 'Prof', 'nDr',
+    # "B.Sc", "e.g", "Co", "gCo", "M.sh", "m.sh",  # good for OSCAR, no effect on NCI
+])
+
 roman_numbers = set()
 
 # code for wite_roman() from
@@ -201,6 +206,8 @@ def check_split(best_split, left_half, right_half, left_half_without_punct, debu
 
 def split_line(line, debug = False, is_left_most = True):
     global candidate_sep_re
+    global closing_brackets
+    global abbreviations
     # (1) score each candidate split point
     #     and find best split point
     best_split = None
@@ -260,7 +267,13 @@ def split_line(line, debug = False, is_left_most = True):
                     left_half2, debug,
                     10
                 )
-            if last_token in ('DR', 'Prof', 'nDr'):
+            if last_token == 'sh' and len(tokens) > 1 \
+            and tokens[-2] in ('M.', 'm.'):
+                # reject split point
+                if debug:
+                    print('rejected due to M./m. sh .')
+                continue
+            if last_token in abbreviations:
                 # reject split point
                 if debug:
                     print('rejected due to last token', last_token)
