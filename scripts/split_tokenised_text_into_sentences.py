@@ -227,11 +227,13 @@ def split_line(line, debug = False, is_left_most = True):
         rtokens = right_half.split()
         if len(rtokens) > 2 \
         and ((is_quote(rtokens[0]) and is_quote(rtokens[1])) \
-        or (rtokens[0] == ')' and tokens and tokens[0] == '(') \
-        or (rtokens[0] == ']' and tokens and tokens[0] == '[') \
-        or (rtokens[0] == '}' and tokens and tokens[0] == '{') \
-        or (rtokens[0] == '>' and tokens and tokens[0] == '<') \
-        or (rtokens[0] in '?!' and rtokens[0] == punctuation)):
+             or (rtokens[0] in closing_brackets \
+                 and rtokens[1] not in ',.:' \
+                 and len(tokens) > 0 \
+                 and tokens[-1] not in abbreviations \
+                ) \
+             or (rtokens[0] in '?!' and rtokens[0] == punctuation) \
+        ):
             # consider splitting between the quotes
             # (or after the closing bracket or repeated question or
             # exclamation marks) with higher priority
