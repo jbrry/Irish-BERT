@@ -28,10 +28,15 @@ def print_usage():
 Options:
 
     --newline               Add empty line after processing an input line
+                            (specify twice to also add a newline after
+                            every new sentence boundary)
 
     --simple                Select basic algorithm used in November 2020
 
     --verbose               Add line numbers and empty lines to output
+
+    --wrap  NUMBER          Warp output at NUMBER characters. Does not apply
+                            to debugging output. (Default: no wrapping)
 
     --debug                 Add step-by-step debugging output
 
@@ -40,6 +45,13 @@ Options:
 
 
 candidate_sep_re = re.compile(' ([.?!]) ')
+
+closing_brackets = set(')]}>')
+
+abbreviations = set([
+    'DR', 'Prof', 'nDr',
+    # "B.Sc", "e.g", "Co", "gCo", "M.sh", "m.sh",  # good for OSCAR, no effect on NCI
+])
 
 roman_numbers = set()
 
@@ -194,6 +206,8 @@ def check_split(best_split, left_half, right_half, left_half_without_punct, debu
 
 def split_line(line, debug = False, is_left_most = True):
     global candidate_sep_re
+    global closing_brackets
+    global abbreviations
     # (1) score each candidate split point
     #     and find best split point
     best_split = None
@@ -213,8 +227,13 @@ def split_line(line, debug = False, is_left_most = True):
         rtokens = right_half.split()
         if len(rtokens) > 2 \
         and ((is_quote(rtokens[0]) and is_quote(rtokens[1])) \
-        or rtokens[0] in ')]}>' \
-        or (rtokens[0] in '?!' and rtokens[0] == punctuation)):
+             or (rtokens[0] in closing_brackets \
+                 and rtokens[1] not in ',.:' \
+                 and len(tokens) > 0 \
+                 and tokens[-1] not in abbreviations \
+                ) \
+             or (rtokens[0] in '?!' and rtokens[0] == punctuation) \
+        ):
             # consider splitting between the quotes
             # (or after the closing bracket or repeated question or
             # exclamation marks) with higher priority
@@ -231,6 +250,10 @@ def split_line(line, debug = False, is_left_most = True):
                 debug,
                 5
             )
+        if rtokens[0] in closing_brackets:
+            # do not split at punctuation followed by a closing bracket,
+            # except when promoted above
+            continue
         if punctuation == '.':
             try:
                 last_token = tokens[-1]
@@ -246,7 +269,13 @@ def split_line(line, debug = False, is_left_most = True):
                     left_half2, debug,
                     10
                 )
-            if last_token in ('DR', 'Prof', 'nDr'):
+            if last_token == 'sh' and len(tokens) > 1 \
+            and tokens[-2] in ('M.', 'm.'):
+                # reject split point
+                if debug:
+                    print('rejected due to M./m. sh .')
+                continue
+            if last_token in abbreviations:
                 # reject split point
                 if debug:
                     print('rejected due to last token', last_token)
@@ -290,13 +319,33 @@ def split_line(line, debug = False, is_left_most = True):
     return split_line(left_half,  debug, is_left_most) + \
            split_line(right_half, debug, False)
 
+def print_line(line, wrap):
+    if not wrap:
+        print(line)
+    on_this_line = 0
+    tokens = []
+    for token in line.split():
+        needed_space = len(token)
+        if tokens:
+            needed_space += 1
+        if on_this_line + needed_space > wrap:
+            # cannot fit this token on the current line
+            if tokens:
+                print(' '.join(tokens))
+            tokens = []
+            on_this_line = 0
+        tokens.append(token)
+        on_this_line += needed_space
+    if tokens:
+        print(' '.join(tokens))
 
 def main():
     opt_help    = False
     opt_simple  = False
-    opt_newline = False
+    opt_newline = 0
     opt_debug   = False
     opt_verbose = False
+    opt_wrap    = 0
     while len(sys.argv) >= 2 and sys.argv[1][:1] == '-':
         option = sys.argv[1]
         option = option.replace('_', '-')
@@ -307,7 +356,10 @@ def main():
         elif option in ('--simple', '--november-2020'):
             opt_simple = True
         elif option == '--newline':
-            opt_newline = True
+            opt_newline += 1
+        elif option == '--wrap':
+            opt_wrap = int(sys.argv[1])
+            del sys.argv[1]
         elif option == '--debug':
             opt_debug = True
         elif option == '--verbose':
@@ -329,7 +381,7 @@ def main():
         in_count += 1
         if opt_debug or opt_verbose:
             print('<', in_count)
-            print(line.rstrip())
+            print_line(line.rstrip(), opt_wrap)
             print()
         if opt_simple:
             for sep in ('.', '?', '!'):
@@ -338,7 +390,7 @@ def main():
                 # (occurrences attach to or inside a token
                 # are not touched)
                 line = line.replace(' %s ' %sep, ' %s\n' %sep)
-            sys.stdout.write(line)
+            print_line(line.rstrip(), opt_wrap)
         else:
             out_count = 0
             splits = split_line(line.rstrip(), debug = opt_debug)
@@ -349,10 +401,10 @@ def main():
                 out_count += 1
                 if opt_debug or opt_verbose:
                     print('> %d/%d' %(out_count, number_of_splits))
-                print(new_line)
-                if opt_debug or opt_verbose:
+                print_line(new_line, opt_wrap)
+                if opt_debug or opt_verbose or opt_newline == 2:
                     print()
-        if opt_debug or opt_verbose or opt_newline:
+        if opt_debug or opt_verbose or opt_newline == 1:
             print()
 
 if __name__ == '__main__':
