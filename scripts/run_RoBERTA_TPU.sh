@@ -111,7 +111,7 @@ python /usr/share/torch-xla-1.7/tpu-examples/deps/fairseq/train.py $DATA_DIR \
     --num_cores=8 \
     --metrics_debug \
     --input_shapes 16x512 18x480 21x384 \
-    --save-dir=${HOME}/checkpoints/gabert \
+    --save-dir=${HOME}/checkpoints/gabert/$FILE_DESC \
     --log_steps=30 \
     --max-epoch=1 \
     --skip-invalid-size-inputs-valid-test
