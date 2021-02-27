@@ -2,6 +2,8 @@
 
 # This script is to be ran on Google Cloud TPU
 # Instructions to set up the TPU and GCE environment: https://cloud.google.com/tpu/docs/tutorials/roberta-pytorch
+# Usage:
+# 	./Irish-BERT/scripts/run_RoBERTA_TPU.sh data/roberta-gabert gabert conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8
 
 test -z $1 && echo "Missing path to directory to write output, e.g. 'data/roberta-gabert'"
 test -z $1 && exit 1
@@ -28,13 +30,13 @@ mkdir -p $ROBERTA_DATA_DIR
 
 # copy pretraining data from GCE bucket
 if [ -d "data/filtered-texts/" ]; then
+then
     echo "Output directory exists, skipping."
 else
     echo "Downloading pretraining data."
     # copy pretraining data from GCE bucket
     gsutil -m cp -r gs://$BUCKET_NAME/data/gabert/pretraining_data/$FILE_DESC/ga/filtered-texts/ data
 fi
-
 
 if [ ! -f $ROBERTA_DATA_DIR/train.txt ]; then
 	echo "Splitting input files"
@@ -44,9 +46,9 @@ if [ ! -f $ROBERTA_DATA_DIR/train.txt ]; then
 		--dataset-dir data/filtered-texts/ \
 		--ratios 0.9 .1 0.0 \
 		--output-dir $ROBERTA_DATA_DIR \
+		--random-seed 471982 \
 		--do-shuffle
 fi
-
 
 # create a sample file of 1M sentences to train SentencePiece vocab
 head -n 1000000 $ROBERTA_DATA_DIR/train.txt > $ROBERTA_DATA_DIR/train_sample.txt
@@ -92,7 +94,7 @@ fairseq-preprocess --only-source \
 # Batch size is MAX_SENTENCES * UPDATE_FREQ = 16 * 16 = 256
 # In https://arxiv.org/pdf/1907.11692.pdf, p.6, this is equivalent to their setting of training for 1M steps.
 # TPU v3-8s have 128GB of VRAM whereas other works below use many more GPUs.
-# CamemBERT: 8192 BATCH_SIZE * 100k 
+# CamemBERT: 8192 BATCH_SIZE * 100k
 # UmBERTO:   2048 BATCH_SIZE * 125K
 
 export TOTAL_UPDATES=1000000   # Total number of training steps
@@ -105,31 +107,31 @@ export UPDATE_FREQ=16	       # Increase the batch size 16x
 export DATA_DIR=${HOME}/gabert/$ROBERTA_DATA_DIR/preprocessed
 
 python /usr/share/torch-xla-1.7/tpu-examples/deps/fairseq/train.py $DATA_DIR \
-	--task masked_lm \
-	--criterion masked_lm \
-	--arch roberta_base \
-	--sample-break-mode complete \
-	--tokens-per-sample $TOKENS_PER_SAMPLE \
-	--optimizer adam \
-	--adam-betas '(0.9,0.98)' \
-	--adam-eps 1e-6 \
-	--clip-norm 0.0 \
-	--lr-scheduler polynomial_decay \
-	--lr $PEAK_LR \
-	--warmup-updates $WARMUP_UPDATES \
-	--total-num-update $TOTAL_UPDATES \
-	--dropout 0.1 \
-	--attention-dropout 0.1 \
-	--weight-decay 0.01 \
-	--update-freq $UPDATE_FREQ \
-	--max-update $TOTAL_UPDATES \
-	--log-format simple \
-	--valid-subset=valid \
-	--train-subset=train \
-	--num_cores=8 \
-	--metrics_debug \
-	--input_shapes 16x512 18x480 21x384 \
-	--save-dir=${HOME}/checkpoints/gabert/$FILE_DESC \
-	--log_steps=30 \
-	--max-epoch=1 \
-	--skip-invalid-size-inputs-valid-test
+        --task masked_lm \
+        --criterion masked_lm \
+        --arch roberta_base \
+        --sample-break-mode complete \
+        --tokens-per-sample $TOKENS_PER_SAMPLE \
+        --optimizer adam \
+        --adam-betas '(0.9,0.98)' \
+        --adam-eps 1e-6 \
+        --clip-norm 0.0 \
+        --lr-scheduler polynomial_decay \
+        --lr $PEAK_LR \
+        --warmup-updates $WARMUP_UPDATES \
+        --total-num-update $TOTAL_UPDATES \
+        --dropout 0.1 \
+        --attention-dropout 0.1 \
+        --weight-decay 0.01 \
+        --update-freq $UPDATE_FREQ \
+        --max-update $TOTAL_UPDATES \
+        --log-format simple \
+        --valid-subset=valid \
+        --train-subset=train \
+        --num_cores=8 \
+        --metrics_debug \
+        --input_shapes 16x512 18x480 21x384 \
+        --save-dir=${HOME}/checkpoints/gabert/$FILE_DESC \
+        --log_steps=30 \
+        --max-epoch=1 \
+        --skip-invalid-size-inputs-valid-test
