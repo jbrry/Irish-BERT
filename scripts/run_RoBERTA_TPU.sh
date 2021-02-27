@@ -15,56 +15,74 @@ test -z $3 && echo "Missing model file description, e.g. list of corpora and fil
 test -z $3 && exit 1
 FILE_DESC=$3
 
-# on GCE VM
-pip install --editable /usr/share/torch-xla-1.7/tpu-examples/deps/fairseq
-mkdir $HOME/gabert
-cd $HOME/gabert
+# make sure you have downloaded Irish-BERT to:
+# $HOME/gabert
 
 # download necessary software
-git clone https://github.com/pytorch/fairseq.git
-git clone https://github.com/jbrry/Irish-BERT # need to provide login/password
+if [ ! -d "fairseq" ]; then
+    git clone https://github.com/pytorch/fairseq.git
+fi
 
 mkdir -p data
 mkdir -p $ROBERTA_DATA_DIR
-# copy pretraining data from GCE bucket
-gsutil -m cp -r gs://$BUCKET_NAME/data/gabert/pretraining_data/$FILE_DESC/ data/
 
-# pretraining text comes from the filtered directory
-# train, valid, and test ratios are 0.9, 0.1 and 0 (i.e. no test)
-python Irish-BERT/scripts/create_train_val_test_files.py \
-	--dataset-dir data/$FILE_DESC/ga/filtered-texts/ \
-	--ratios 0.9 .1 0.0 \
-	--output-dir $ROBERTA_DATA_DIR \
-	--do-shuffle
+# copy pretraining data from GCE bucket
+if [ -d "data/filtered-texts/" ]; then
+    echo "Output directory exists, skipping."
+else
+    echo "Downloading pretraining data."
+    # copy pretraining data from GCE bucket
+    gsutil -m cp -r gs://$BUCKET_NAME/data/gabert/pretraining_data/$FILE_DESC/ga/filtered-texts/ data
+fi
+
+
+if [ ! -f $ROBERTA_DATA_DIR/train.txt ]; then
+	echo "Splitting input files"
+	# pretraining text comes from the filtered directory
+	# train, valid, and test ratios are 0.9, 0.1 and 0 (i.e. no test)
+	python Irish-BERT/scripts/create_train_val_test_files.py \
+		--dataset-dir data/filtered-texts/ \
+		--ratios 0.9 .1 0.0 \
+		--output-dir $ROBERTA_DATA_DIR \
+		--do-shuffle
+fi
+
 
 # create a sample file of 1M sentences to train SentencePiece vocab
 head -n 1000000 $ROBERTA_DATA_DIR/train.txt > $ROBERTA_DATA_DIR/train_sample.txt
 
 pip install sentencepiece
 
-# train SPM model
-# --shuffle_input_sentence=true 
-python fairseq/scripts/spm_train.py \
-	--input=$ROBERTA_DATA_DIR/train_sample.txt \
-	--model_prefix=$ROBERTA_DATA_DIR/sentencepiece.bpe \
-	--vocab_size=30000 \
-	--character_coverage=0.9999 \
-	--model_type=bpe
 
-# encode train and valid files
-for SPLIT in train valid; do
-	python fairseq/scripts/spm_encode.py \
-	--model $ROBERTA_DATA_DIR/sentencepiece.bpe.model \
-	--output_format=piece \
-	--inputs $ROBERTA_DATA_DIR/$SPLIT.txt \
-	--outputs $ROBERTA_DATA_DIR/$SPLIT.bpe
+# Learn SentencePiece model
+if [ ! -f $ROBERTA_DATA_DIR/sentencepiece.bpe.model ]; then
+	echo "Training SentencePiece model"
+	# --shuffle_input_sentence=true 
+	python fairseq/scripts/spm_train.py --input=$ROBERTA_DATA_DIR/train_sample.txt \
+		--model_prefix=$ROBERTA_DATA_DIR/sentencepiece.bpe \
+		--vocab_size=30000 \
+		--character_coverage=0.9999 \
+		--model_type=bpe
+fi
+
+
+# Encode as BPE
+if [ ! -f $ROBERTA_DATA_DIR/train.bpe ]; then
+	# encode train and valid files
+	for SPLIT in train valid; do
+		python fairseq/scripts/spm_encode.py --model $ROBERTA_DATA_DIR/sentencepiece.bpe.model \
+			--output_format=piece \
+			--inputs $ROBERTA_DATA_DIR/$SPLIT.txt \
+			--outputs $ROBERTA_DATA_DIR/$SPLIT.bpe
+
+	done
+fi
 
 # convert vocab from tab-separated to space-separated which is the format fairseq expects
 cp $ROBERTA_DATA_DIR/sentencepiece.bpe.vocab $ROBERTA_DATA_DIR/fairseq-sentencepiece.bpe.vocab 
-sed -i "$'s/\t/ /g'" $ROBERTA_DATA_DIR/fairseq-sentencepiece.bpe.vocab
+sed -i $'s/\t/ /g' $ROBERTA_DATA_DIR/fairseq-sentencepiece.bpe.vocab
 
-fairseq-preprocess \
-	--only-source \
+fairseq-preprocess --only-source \
 	--srcdict $ROBERTA_DATA_DIR/fairseq-sentencepiece.bpe.vocab \
 	--trainpref $ROBERTA_DATA_DIR/train.bpe \
 	--validpref $ROBERTA_DATA_DIR/valid.bpe \
@@ -79,10 +97,10 @@ fairseq-preprocess \
 
 export TOTAL_UPDATES=1000000   # Total number of training steps
 export WARMUP_UPDATES=100000   # Warmup the learning rate over this many updates
-export PEAK_LR=0.0005          # Peak learning rate, adjust as needed  1e-4
+export PEAK_LR=0.0005	       # Peak learning rate, adjust as needed  1e-4
 export TOKENS_PER_SAMPLE=512   # Max sequence length
 export MAX_SENTENCES=16        # Number of sequences per batch (batch size)
-export UPDATE_FREQ=16          # Increase the batch size 16x
+export UPDATE_FREQ=16	       # Increase the batch size 16x
 
 export DATA_DIR=${HOME}/gabert/$ROBERTA_DATA_DIR/preprocessed
 
