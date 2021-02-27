@@ -30,7 +30,6 @@ mkdir -p $ROBERTA_DATA_DIR
 
 # copy pretraining data from GCE bucket
 if [ -d "data/filtered-texts/" ]; then
-then
     echo "Output directory exists, skipping."
 else
     echo "Downloading pretraining data."
