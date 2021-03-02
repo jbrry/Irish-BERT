@@ -5,7 +5,7 @@
 # Usage:
 # 	./Irish-BERT/scripts/run_RoBERTA_TPU.sh data/roberta-gabert gabert conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8
 
-test -z $1 && echo "Missing path to directory to write output, e.g. 'data/roberta-gabert'"
+test -z $1 && echo "Missing path to directory to write output, e.g. 'data/roberta-gabert-v2'"
 test -z $1 && exit 1
 ROBERTA_DATA_DIR=$1
 
@@ -24,6 +24,13 @@ FILE_DESC=$3
 if [ ! -d "fairseq" ]; then
     git clone https://github.com/pytorch/fairseq.git
 fi
+
+
+SPM_TRAIN=fairseq/scripts/spm_train.py
+SPM_ENCODE=$SCRIPTS/spm_encode.py
+BPESIZE=30000
+TRAIN_MINLEN=1  # remove sentences with <1 BPE token
+TRAIN_MAXLEN=512  # remove sentences with >512 BPE tokens
 
 mkdir -p data
 mkdir -p $ROBERTA_DATA_DIR
@@ -59,10 +66,10 @@ pip install sentencepiece
 if [ ! -f $ROBERTA_DATA_DIR/sentencepiece.bpe.model ]; then
 	echo "Training SentencePiece model"
 	# --shuffle_input_sentence=true 
-	python fairseq/scripts/spm_train.py --input=$ROBERTA_DATA_DIR/train_sample.txt \
+	python "$SPM_TRAIN" --input=$ROBERTA_DATA_DIR/train_sample.txt \
 		--model_prefix=$ROBERTA_DATA_DIR/sentencepiece.bpe \
-		--vocab_size=30000 \
-		--character_coverage=0.9999 \
+		--vocab_size=$BPESIZE \
+		--character_coverage=1.0 \
 		--model_type=bpe
 fi
 
@@ -71,11 +78,11 @@ fi
 if [ ! -f $ROBERTA_DATA_DIR/train.bpe ]; then
 	# encode train and valid files
 	for SPLIT in train valid; do
-		python fairseq/scripts/spm_encode.py --model $ROBERTA_DATA_DIR/sentencepiece.bpe.model \
+		python "$SPM_ENCODE" --model $ROBERTA_DATA_DIR/sentencepiece.bpe.model \
 			--output_format=piece \
 			--inputs $ROBERTA_DATA_DIR/$SPLIT.txt \
-			--outputs $ROBERTA_DATA_DIR/$SPLIT.bpe
-
+			--outputs $ROBERTA_DATA_DIR/$SPLIT.bpe \
+            --min-len $TRAIN_MINLEN --max-len $TRAIN_MAXLEN
 	done
 fi
 
@@ -98,7 +105,7 @@ fairseq-preprocess --only-source \
 
 export TOTAL_UPDATES=1000000   # Total number of training steps
 export WARMUP_UPDATES=100000   # Warmup the learning rate over this many updates
-export PEAK_LR=0.0005	       # Peak learning rate, adjust as needed  1e-4
+export PEAK_LR=0.0001	       # Peak learning rate, adjust as needed  1e-4
 export TOKENS_PER_SAMPLE=512   # Max sequence length
 export MAX_SENTENCES=16        # Number of sequences per batch (batch size)
 export UPDATE_FREQ=16	       # Increase the batch size 16x
@@ -131,6 +138,7 @@ python /usr/share/torch-xla-1.7/tpu-examples/deps/fairseq/train.py $DATA_DIR \
         --metrics_debug \
         --input_shapes 16x512 18x480 21x384 \
         --save-dir=${HOME}/checkpoints/gabert/$FILE_DESC \
-        --log_steps=30 \
-        --max-epoch=1 \
-        --skip-invalid-size-inputs-valid-test
+        --log_steps=50 \
+        --max-epoch=100 \
+        --skip-invalid-size-inputs-valid-test \
+        --mask-whole-words
