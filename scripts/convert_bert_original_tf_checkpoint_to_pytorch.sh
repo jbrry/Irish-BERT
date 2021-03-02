@@ -23,7 +23,8 @@ mkdir -p ${PYTORCH_OUTDIR}
 BERT_CONFIG=${MODEL_DIR}/bert_config.json
 WIKI_BERT_DIR="../wiki-bert-pipeline"
 BERT_VOCAB=${WIKI_BERT_DIR}/data/${FILE_DESC}/ga/wordpiece/cased/vocab.txt
-cp ${BERT_CONFIG} ${PYTORCH_OUTDIR}
+
+cp ${BERT_CONFIG} ${PYTORCH_OUTDIR}/config.json
 cp ${BERT_VOCAB} ${PYTORCH_OUTDIR}
 
 transformers-cli convert --model_type bert \
@@ -33,5 +34,5 @@ transformers-cli convert --model_type bert \
 
 # pack model as expected by AlennNLP
 cd ${PYTORCH_OUTDIR}
-tar -czf weights.tar.gz bert_config.json pytorch_model.bin
+tar -czf weights.tar.gz config.json pytorch_model.bin
 
