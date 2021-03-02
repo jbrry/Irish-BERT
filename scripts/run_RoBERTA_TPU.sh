@@ -27,7 +27,7 @@ fi
 
 
 SPM_TRAIN=fairseq/scripts/spm_train.py
-SPM_ENCODE=$SCRIPTS/spm_encode.py
+SPM_ENCODE=fairseq/scripts/spm_encode.py
 BPESIZE=30000
 TRAIN_MINLEN=1  # remove sentences with <1 BPE token
 TRAIN_MAXLEN=512  # remove sentences with >512 BPE tokens
