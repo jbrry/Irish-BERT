@@ -40,4 +40,5 @@ python build_pretraining_dataset.py --corpus-dir $CORPUS_DIR \
     --num-processes 50 --no-lower-case
 
 echo "Uploading pretraining data to GCE bucket..."
-gsutil -m cp -r $OUTPUT_DIR gs://$BUCKET_NAME/data/gabert/pretraining_data/electra/$FILE_DESC/
+gsutil -m cp -r $OUTPUT_DIR gs://$BUCKET_NAME/data/gabert/pretraining_data/electra/$FILE_DESC/pretrain_tfrecords
+gsutil cp $VOCAB_FILE gs://$BUCKET_NAME/data/gabert/pretraining_data/electra/$FILE_DESC/
