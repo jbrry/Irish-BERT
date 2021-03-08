@@ -20,16 +20,16 @@ masked_line=f"Is é Deireadh Fómhair nó Mí Dheireadh Fómhair an {MASK} mí d
 masked_line=f"Ceoltóir {MASK} ab ea Johnny Cash"
 """
 
-bert_path = "/home/jbarry/spinning-storage/jbarry/ga_BERT/Irish-BERT/models/ga_bert/output/pytorch_models/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/"
+model_path = "/home/jbarry/ga_BERT/Irish-BERT/models/ga_bert/output/pytorch/electra_base/"
 
 # Usage case 1: Pipelines
 nlp = pipeline(
     "fill-mask",
-    model=bert_path,
+    model=model_path,
 )
 
 MASK = nlp.tokenizer.mask_token
-masked_line=f"Ceoltóir {MASK} ab ea Johnny Cash"
+masked_line=f"Johnny Cash is a [MASK] singer."
 
 print(f"Trying sample sentence: {masked_line}")
 outputs = nlp(masked_line)
@@ -39,10 +39,8 @@ for output in outputs[:top_k]:
     print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}")
 
 # Usage case 2: Using the model directly
-tokenizer = AutoTokenizer.from_pretrained(bert_path)
-model = AutoModelForMaskedLM.from_pretrained(bert_path)
-
-masked_line=f"Tá Coláiste na Tríonóide lonnaithe i gcontae na {MASK}"
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+model = AutoModelForMaskedLM.from_pretrained(model_path)
 
 input = tokenizer.encode(masked_line, return_tensors="pt")
 mask_token_index = torch.where(input == tokenizer.mask_token_id)[1]
@@ -54,3 +52,13 @@ top_5_tokens = torch.topk(mask_token_logits, 5, dim=1).indices[0].tolist()
 
 for token in top_5_tokens:
     print(masked_line.replace(tokenizer.mask_token, tokenizer.decode([token])))
+
+# ELECTRA
+# from transformers import FillMaskPipeline, ElectraForMaskedLM, ElectraTokenizer
+
+# fill_mask = FillMaskPipeline(
+#     model=ElectraForMaskedLM.from_pretrained(model_path),
+#     tokenizer=ElectraTokenizer.from_pretrained(model_path),
+# )
+
+# print(fill_mask(masked_line))
