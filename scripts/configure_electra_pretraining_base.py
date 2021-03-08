@@ -87,7 +87,7 @@ class PretrainingConfig(object):
     self.use_tpu = True
     self.num_tpu_cores = 8
     self.tpu_job_name = None
-    self.tpu_name = gabert-electra  # cloud TPU to use for training
+    self.tpu_name = "gabert-electra"  # cloud TPU to use for training
     self.tpu_zone = None  # GCE zone where the Cloud TPU is located in
     self.gcp_project = None  # project name for the Cloud TPU-enabled project
 
