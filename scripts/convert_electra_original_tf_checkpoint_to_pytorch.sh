@@ -1,11 +1,16 @@
 #!/bin/bash
 
 CHECKPOINT="models/ga_bert/output/electra_base/"
+
+# obtain $CONFIG with:
+# 'wget https://huggingface.co/google/electra-base-generator/blob/main/config.json'
 CONFIG="models/ga_bert/output/electra_base/config.json"
 OUTDIR="models/ga_bert/output/pytorch/electra_base/"
 
 mkdir -p $OUTDIR
 cp $CONFIG $OUTDIR
+
+cp "$CHECKPOINT/vocab.txt" "$OUTDIR"
 
 # use 'generator' for MLM or 'discriminator' for classification
 # e.g. --discriminator_or_generator=generator to be used with ElectraForMaskedLM
