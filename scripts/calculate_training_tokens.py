@@ -5,7 +5,7 @@ def epoch_calculator(name, batch_size, seq_len, steps, corpus_size, steps_propor
     total = tokens_per_batch * steps
     epochs = total / corpus_size
 
-    print(f"{name} {steps_proportion}% @ {seq_len}: Tokens seen: {total/1000000}M, Approx. {epochs:.2f} epochs.")
+    print(f"{name} with {steps} steps: \t Tokens seen: {total/1000000}M, Approx. {epochs:.2f} epochs over a corpus size of {corpus_size/1000000:.2f}M tokens.")
 
 # Original BERT paper
 name = "BERT"
