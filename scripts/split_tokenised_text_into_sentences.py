@@ -8,15 +8,18 @@
 
 # Author: Joachim Wagner
 
-
 '''
    input: one or more tokenised sentences per line; sentences not to cross line breaks
    output: one tokenised sentence per line
 '''
 
+# Python 3
+
 import collections
+import hashlib
 import math
 import os
+import random
 import re
 import sys
 import unicodedata
@@ -37,6 +40,19 @@ Options:
 
     --wrap  NUMBER          Warp output at NUMBER characters. Does not apply
                             to debugging output. (Default: no wrapping)
+
+    --random  NUMBER        At each recusion, perform a split at a random
+                            location with probability NUMBER.
+                            (Default: 0.0)
+
+    --seed  STRING          Initialisation for random splits. 0 or empty
+                            string uses system-provided initialisation.
+                            (Default: 42)
+
+    --minimum  NUMBER       DO not prodice fragments with fewer than
+                            NUMBER tokens (unless an input line already
+                            has fewer)
+                            (Default: 1)
 
     --debug                 Add step-by-step debugging output
 
@@ -204,10 +220,40 @@ def check_split(best_split, left_half, right_half, left_half_without_punct, debu
         best_split = candidate_split
     return best_split
 
-def split_line(line, debug = False, is_left_most = True):
+def split_line(
+    line,
+    random_split_probability = 0.0,
+    minimal_length = 1,
+    debug = False, is_left_most = True
+):
     global candidate_sep_re
     global closing_brackets
     global abbreviations
+    tokens = line.split()
+    if len(tokens) < 2*minimal_length:
+        if debug:
+            print('Too few tokens to split this sequence')
+        return [line]
+    elif random_split_probability and random.random() < random_split_probability:
+        if debug:
+            print('Performing random split...')
+        left_size = random.randrange(
+            minimal_length, len(tokens)+1-minimal_length
+        )
+        left_half  = ' '.join(tokens[:left_size])
+        right_half = ' '.join(tokens[left_size:])
+        assert left_half
+        assert right_half
+        return split_line(
+                   left_half,  random_split_probability,
+                   minimal_length,
+                   debug, is_left_most
+               ) + \
+               split_line(
+                   right_half, random_split_probability,
+                   minimal_length,
+                   debug, False
+               )
     # (1) score each candidate split point
     #     and find best split point
     best_split = None
@@ -225,6 +271,11 @@ def split_line(line, debug = False, is_left_most = True):
         bonus = 0
         tokens = left_half_without_punct.split()
         rtokens = right_half.split()
+        if len(tokens) + 1 < minimal_length \
+        or len(rtokens) < minimal_length:
+            if debug:
+                print('Too few tokens in one of the halves to split here')
+            continue
         if len(rtokens) > 2 \
         and ((is_quote(rtokens[0]) and is_quote(rtokens[1])) \
              or (rtokens[0] in closing_brackets \
@@ -316,8 +367,14 @@ def split_line(line, debug = False, is_left_most = True):
     if debug:
         print('Best score %d with balance %d' %(score, balance))
     # resursively split each half
-    return split_line(left_half,  debug, is_left_most) + \
-           split_line(right_half, debug, False)
+    return split_line(
+               left_half,  random_split_probability, minimal_length,
+               debug, is_left_most
+           ) + \
+           split_line(
+               right_half, random_split_probability, minimal_length,
+               debug, False
+           )
 
 def print_line(line, wrap):
     if not wrap:
@@ -346,6 +403,9 @@ def main():
     opt_debug   = False
     opt_verbose = False
     opt_wrap    = 0
+    opt_random  = 0.0
+    opt_seed    = '42'
+    opt_minimum = 1
     while len(sys.argv) >= 2 and sys.argv[1][:1] == '-':
         option = sys.argv[1]
         option = option.replace('_', '-')
@@ -357,8 +417,17 @@ def main():
             opt_simple = True
         elif option == '--newline':
             opt_newline += 1
+        elif option in ('--seed', '--random-seed'):
+            opt_seed = sys.argv[1]
+            del sys.argv[1]
+        elif option in ('--minimum', '--minimal-length'):
+            opt_minimum = int(sys.argv[1])
+            del sys.argv[1]
         elif option == '--wrap':
             opt_wrap = int(sys.argv[1])
+            del sys.argv[1]
+        elif option in ('--random', '--random-split-proability'):
+            opt_random = float(sys.argv[1])
             del sys.argv[1]
         elif option == '--debug':
             opt_debug = True
@@ -373,6 +442,10 @@ def main():
     if opt_help:
         print_usage()
         sys.exit(0)
+    if opt_seed and opt_seed != '0':
+        random.seed(
+            int(hashlib.sha512(opt_seed.encode('utf-8')).hexdigest(), 16)
+        )
     in_count = 0
     while True:
         line = sys.stdin.readline()
@@ -393,14 +466,18 @@ def main():
             print_line(line.rstrip(), opt_wrap)
         else:
             out_count = 0
-            splits = split_line(line.rstrip(), debug = opt_debug)
+            splits = split_line(
+                line.rstrip(), opt_random, opt_minimum,
+                debug = opt_debug,
+            )
             number_of_splits = len(splits)
             if opt_debug:
                 print()
             for new_line in splits:
-                out_count += 1
                 if opt_debug or opt_verbose:
-                    print('> %d/%d' %(out_count, number_of_splits))
+                    n_tokens = len(new_line.split())
+                    print('> %d:%d' %(out_count+1, out_count+n_tokens))
+                    out_count += n_tokens
                 print_line(new_line, opt_wrap)
                 if opt_debug or opt_verbose or opt_newline == 2:
                     print()
