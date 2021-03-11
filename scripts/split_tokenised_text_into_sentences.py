@@ -49,7 +49,7 @@ Options:
                             string uses system-provided initialisation.
                             (Default: 42)
 
-    --minimum  NUMBER       DO not prodice fragments with fewer than
+    --minimum  NUMBER       Do not produce fragments with fewer than
                             NUMBER tokens (unless an input line already
                             has fewer)
                             (Default: 1)
