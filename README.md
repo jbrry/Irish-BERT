@@ -166,10 +166,11 @@ To use the models or visualise the masked-fill capabilities, you will first need
 
 ```
 # Convert BERT checkpoint
-scripts/convert_bert_original_tf_checkpoint_to_pytorch.sh
+scripts/convert_bert_original_tf_checkpoint_to_pytorch.sh <step_size> <bert_model> <file_desc>
 
 # Convert ELECTRA checkpoint
-scripts/convert_electra_original_tf_checkpoint_to_pytorch.sh
+scripts/convert_electra_original_tf_checkpoint_to_pytorch.sh <step_size> <file_desc> <model_type>
+
 ```
 
 To use the models with `transformers`, just provide the full path to your local copy of these models, where the directory should contain the model config file: `config.json`, the vocabulary: `vocab.txt` and the PyTorch weights `pytorch_model.bin`. Once you have these files locally, you can run the below to inspect the masked-fill capabilities of the model:
