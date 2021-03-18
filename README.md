@@ -17,10 +17,38 @@ Repository to store helper scripts for creating an Irish BERT model.
     ```
     conda activate ga_BERT
     ```
-    
-There are some other pieces of software you will need to download. We use [rclone](https://rclone.org/) to download files from Google Drive. You will need to download and configure `rclone` to download the `oscar` corpus as well as the files we have collated on Google Drive (bear in mind, these scripts won't work for you if you do not have access to our shared folder on Google Drive). For external researchers outside of this project, these scripts may not be of much relevance to you but they can be modified to work with your own data.
+
+4. Prepare working directory:
+The repository will follow the below layout, first create a root directory which will store this repository as well as the other repositories we will use:
+```bash
+mkdir ga_BERT
+cd ga_BERT
+```
+
+Then install this repository:
+
+```bash
+git clone https://github.com/jbrry/Irish-BERT.git
+
+# install wiki-bert-pipeline
+git clone https://github.com/jbrry/wiki-bert-pipeline
+
+# optionally install OpusFilter (see below)
+git clone https://github.com/Helsinki-NLP/OpusFilter.git
+```
+
+This should produce the below directory structure. In general, we will download all external repositories in the root directory `ga_BERT`.
+
+```
+ga_BERT
+└───Irish-BERT
+└───wiki-bert-pipeline
+└───OpusFilter 
+```
 
 We use our forked version of the [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline) to create our vocabulary and pre-training data for BERT/ELECTRA. Please follow the instructions to set up the `wiki-bert-pipeline` in its README. If you want to include [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter) filtering, please install `OpusFilter` following the instructions in its README. Note that the `VariKN` and `eflomal` dependencies are not required for our purposes. To run `OpusFilter` on non-parallel data, switch to the `nlingual-rebase` branch in the `OpusFilter` repository. 
+
+There are some other pieces of software you will need to download. We use [rclone](https://rclone.org/) to download files from Google Drive. You will need to download and configure `rclone` to download the `oscar` corpus as well as the files we have collated on Google Drive (bear in mind, these scripts won't work for you if you do not have access to our shared folder on Google Drive). For external researchers outside of this project, these scripts may not be of much relevance to you but they can be modified to work with your own data.
 
 ## Pre-training Corpora
 We collect raw corpora for pre-training from the following sources:
@@ -123,22 +151,22 @@ We also train [ELECTRA](https://github.com/google-research/electra) models. For 
 ```
 Once the pretraining data is prepared for ELECTRA, change directory to your clone of ELECTRA. The pretraining configuration we used can be found at `scripts/configure_electra_pretraining_base.py`. Specifically, we overwrote the parameters in [configure_pretraining](https://github.com/google-research/electra/blob/master/configure_pretraining.py) to use our parameters.
 
-To train the ELECTRA model on a TPU with Google Cloud Storage, run:
+To train the ELECTRA model on a TPU with Google Cloud Storage, run (where <file_description> is the string used in the `wiki-bert-pipeline` at `wiki-bert-pipeline/data/<file_description>`:
 
 ```
-python3 run_pretraining.py --data-dir gs://gabert-electra/pretraining_data/electra/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8 --model-name electra-base-irish-cased
+python3 run_pretraining.py --data-dir gs://gabert-electra/pretraining_data/electra/<file_description> \
+    --model-name electra-base-irish-cased
 
 ```
 Training takes about 12 hours for every 50,000 steps.
 
-### Using/Inspecting Language Models
+### Using/ Inspecting Language Models
 
 To use the models or visualise the masked-fill capabilities, you will first need to download the model checkpoints. You will then need to use the `transformers` library to convert the TensorFlow checkpoints to PyTorch. You may need to adjust some of the paths if they are different on your filesystem.
 
 ```
 # Convert BERT checkpoint
 scripts/convert_bert_original_tf_checkpoint_to_pytorch.sh
-
 
 # Convert ELECTRA checkpoint
 scripts/convert_electra_original_tf_checkpoint_to_pytorch.sh
