@@ -12,9 +12,10 @@ test -z $3 && echo "Missing model type, use 'generator' for MLM or 'discriminato
 test -z $3 && exit 1
 MODEL_TYPE=$3
 
-GABERT_DIR="/home/jbarry/spinning-storage/jbarry/ga_BERT"
+# You may need to change this path according to how you set up this directory.
+GABERT_DIR="/home/${USER}/spinning-storage/${USER}/ga_BERT"
 # TF checkpoints are available on Google Drive
-CHECKPOINT="$GABERT_DIR/Irish-BERT/models/ga_bert/output/electra/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/models/electra-base-irish-cased"
+CHECKPOINT="$GABERT_DIR/Irish-BERT/models/ga_bert/output/electra/$FILE_DESC/models/electra-base-irish-cased"
 CONFIG="$GABERT_DIR/Irish-BERT/models/ga_bert/electra_base_${MODEL_TYPE}_config.json"
 OUTDIR="$GABERT_DIR/Irish-BERT/models/ga_bert/output/pytorch/electra/$FILE_DESC/electra-base-irish-cased-$MODEL_TYPE-$STEPS/"
 

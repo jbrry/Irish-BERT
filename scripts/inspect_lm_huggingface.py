@@ -4,8 +4,8 @@ import torch
 
 # Usage:
 # Requires `transformers` library: `pip install transformers`
-# You will need to download the model from Google Drive and store it locally.
-# Adjust `bert_path` to your local directory containing the BERT model.
+# You will need to download the model(s) from Google Drive and store it locally.
+# Adjust `model_path` to your local directory containing the BERT model.
 # To run: python scripts/inspect_lm_huggingface.py
 
 """
@@ -20,7 +20,8 @@ masked_line=f"Is é Deireadh Fómhair nó Mí Dheireadh Fómhair an {MASK} mí d
 masked_line=f"Ceoltóir {MASK} ab ea Johnny Cash"
 """
 
-model_path = "/home/jbarry/ga_BERT/Irish-BERT/models/ga_bert/output/pytorch/electra_base/"
+#model_path = "/home/jbarry/ga_BERT/Irish-BERT/models/ga_bert/output/pytorch/electra_base/"
+model_path = "/home/jbarry/ga_BERT/Irish-BERT/models/ga_bert/output/pytorch/gabert-electra/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/"
 
 # Usage case 1: Pipelines
 nlp = pipeline(
@@ -28,37 +29,25 @@ nlp = pipeline(
     model=model_path,
 )
 
-MASK = nlp.tokenizer.mask_token
-masked_line=f"Johnny Cash is a [MASK] singer."
+masked_lines=[
+    "Is é Deireadh Fómhair an [MASK] mí den bhliain.",
+    "Ceoltóir [MASK] ab ea Johnny Cash.",
+    "Ba [MASK] é Oscar Wilde.",
+    "Tá Coláiste na Tríonóide lonnaithe i [MASK].",
+    "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK].",
+    "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK] Átha Cliath.",
+    "Tá Coláiste na Tríonóide lonnaithe i lár na [MASK].",
+    "Is í an [MASK] an t-ábhar is fearr liom.",
+    "[MASK] an dath is fearr liom.",
+]
 
-print(f"Trying sample sentence: {masked_line}")
-outputs = nlp(masked_line)
-top_k = 5
+for masked_line in masked_lines:
+    print(f"{masked_line}")
+    outputs = nlp(masked_line)
+    top_k = 5
 
-for output in outputs[:top_k]:
-    print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}")
+    for output in outputs[:top_k]:
+        print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}")
+    print("\n")
 
-# Usage case 2: Using the model directly
-tokenizer = AutoTokenizer.from_pretrained(model_path)
-model = AutoModelForMaskedLM.from_pretrained(model_path)
 
-input = tokenizer.encode(masked_line, return_tensors="pt")
-mask_token_index = torch.where(input == tokenizer.mask_token_id)[1]
-
-token_logits = model(input)[0]
-mask_token_logits = token_logits[0, mask_token_index, :]
-
-top_5_tokens = torch.topk(mask_token_logits, 5, dim=1).indices[0].tolist()
-
-for token in top_5_tokens:
-    print(masked_line.replace(tokenizer.mask_token, tokenizer.decode([token])))
-
-# ELECTRA
-# from transformers import FillMaskPipeline, ElectraForMaskedLM, ElectraTokenizer
-
-# fill_mask = FillMaskPipeline(
-#     model=ElectraForMaskedLM.from_pretrained(model_path),
-#     tokenizer=ElectraTokenizer.from_pretrained(model_path),
-# )
-
-# print(fill_mask(masked_line))
