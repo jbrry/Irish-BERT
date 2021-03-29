@@ -7,6 +7,7 @@
 # written permission of the copyright holder.
 
 import os
+import sys
 from transformers import pipeline
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 from transformers import AutoModelWithLMHead
@@ -43,6 +44,29 @@ name2path = {
     'gambert':   'models/multilingual_bert/output/pytorch/???/',
 }
 
+
+def print_usage():
+    print('Usage: %s [options]' %(os.path.split(sys.argv[0])[-1]))
+    print("""
+Options:
+
+    --model  NAME           What model to use, one of electra, gaelectra,
+                            gabert, mbert and gambert
+                            (Default: gabert)
+
+    --top  NUMBER           How many top predictions to output
+                            (Default: 5)
+
+    --tsv                   Produce tab-separated output
+                            (Default: repeat descriptions)
+
+    --from  FILENAME        Read input lines from first column of file,
+                            - = stdin
+                            (Default: process hard-coded lines)
+
+    --help                  Show this message
+""")
+
 masked_lines=[
     "Is é Deireadh Fómhair an [MASK] mí den bhliain.",
     "Ceoltóir [MASK] ab ea Johnny Cash.",
@@ -55,12 +79,61 @@ masked_lines=[
     "[MASK] an dath is fearr liom.",
 ]
 
+def line_reader(filename):
+    if filename == '-':
+        f = sys.stdin
+    else:
+        f = open(filename, 'r')
+    while True:
+        line = f.readline()
+        if not line:
+            break
+        yield line.split('\t')[0].rstrip()
+    if filename != '-':
+        f.close()
+
 def main():
+    global masked_lines
     opt_model_name   = 'gabert'
     opt_use_pipeline = True
     opt_top_k        = 5
     opt_output_tsv   = False
-    # TODO: process command line options
+    opt_help    = False
+    opt_debug   = False
+    opt_verbose = False
+    # process command line options
+    while len(sys.argv) >= 2 and sys.argv[1][:1] == '-':
+        option = sys.argv[1]
+        option = option.replace('_', '-')
+        del sys.argv[1]
+        if option in ('--help', '-h'):
+            opt_help = True
+            break
+        elif option in ('--model', '--model-name'):
+            opt_model_name = sys.argv[1]
+            del sys.argv[1]
+        elif option in ('--top', '--top-k'):
+            opt_top_k = int(sys.argv[1])
+            del sys.argv[1]
+        elif option in ('--tsv', '--output-tsv'):
+            opt_output_tsv = True
+        elif option in ('--from', '--read-from'):
+            masked_lines = line_reader(sys.argv[1])
+            del sys.argv[1]
+        elif option == '--debug':
+            opt_debug = True
+        elif option == '--verbose':
+            opt_verbose = True
+        else:
+            print('Unsupported option %s' %option)
+            opt_help = True
+            break
+    if len(sys.argv) != 1:
+        opt_help = True
+    if opt_help:
+        print_usage()
+        sys.exit(0)
+    # prepare model
     model_path = os.path.abspath(name2path[opt_model_name])
     if opt_use_pipeline:
         # Usage case 1: Huggingface pipeline module
@@ -78,6 +151,8 @@ def main():
         print(masked_line)
         encoded = tokeniser(masked_line)
         print(tokeniser.convert_ids_to_tokens(tokeniser(masked_line)['input_ids']))
+        if not '[MASK]' in masked_line:
+            continue
         if opt_use_pipeline:
             outputs = nlp(masked_line)
             if opt_output_tsv:
