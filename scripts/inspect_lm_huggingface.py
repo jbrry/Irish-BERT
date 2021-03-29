@@ -9,6 +9,7 @@
 import os
 from transformers import pipeline
 from transformers import AutoModelForMaskedLM, AutoTokenizer
+from transformers import AutoModelWithLMHead
 import torch
 
 # Python 3
@@ -67,11 +68,16 @@ def main():
             "fill-mask",
             model = model_path,
         )
-        assert '[MASK]' == nlp.tokenizer.mask_token
+        tokeniser = nlp.tokenizer
+        #mask_token = nlp.tokenizer.mask_token
     else:
-        raise NotImplementedError
+        tokeniser = AutoTokenizer.from_pretrained(model_path)
+        model = AutoModelWithLMHead.from_pretrained(model_path)
+    assert '[MASK]' == tokeniser.mask_token
     for masked_line in masked_lines:
         print(masked_line)
+        encoded = tokeniser(masked_line)
+        print(tokeniser.convert_ids_to_tokens(tokeniser(masked_line)['input_ids']))
         if opt_use_pipeline:
             outputs = nlp(masked_line)
             if opt_output_tsv:
