@@ -41,7 +41,7 @@ Options:
     --wrap  NUMBER          Warp output at NUMBER characters. Does not apply
                             to debugging output. (Default: no wrapping)
 
-    --random  NUMBER        At each recusion, perform a split at a random
+    --random  NUMBER        At each recursion, perform a split at a random
                             location with probability NUMBER.
                             (Default: 0.0)
 
