@@ -66,6 +66,12 @@ Options:
                             omitted.
                             (Default: process hard-coded lines)
 
+    --multi-mask  NUMBER    Also make predictions for inputs with up to
+                            NUMBER copies of [MASK].
+                            At the time of writing not supported by the
+                            underlying library.
+                            (Default: 1 = no extra copies)
+
     --help                  Show this message
 """)
 
@@ -99,6 +105,9 @@ def main():
     opt_model_name   = 'gabert'
     opt_use_pipeline = True
     opt_top_k        = 5
+    # opt_max_masks > 1 currently not supported by huggingface:
+    # https://github.com/huggingface/transformers/issues/3619
+    opt_max_masks    = 1
     opt_output_tsv   = False
     opt_help    = False
     opt_debug   = False
@@ -116,6 +125,9 @@ def main():
             del sys.argv[1]
         elif option in ('--top', '--top-k'):
             opt_top_k = int(sys.argv[1])
+            del sys.argv[1]
+        elif option in ('--multi-mask', '--max-masks'):
+            opt_max_masks = int(sys.argv[1])
             del sys.argv[1]
         elif option in ('--tsv', '--output-tsv'):
             opt_output_tsv = True
@@ -147,19 +159,22 @@ def main():
             model = model_path,
         )
         tokeniser = nlp.tokenizer
-        #mask_token = nlp.tokenizer.mask_token
     else:
         tokeniser = AutoTokenizer.from_pretrained(model_path)
         model = AutoModelWithLMHead.from_pretrained(model_path)
     assert '[MASK]' == tokeniser.mask_token
     for masked_line in masked_lines:
-        print(masked_line)
-        encoded = tokeniser(masked_line)
-        print(tokeniser.convert_ids_to_tokens(tokeniser(masked_line)['input_ids']))
-        if not '[MASK]' in masked_line:
-            continue
-        if opt_use_pipeline:
-            outputs = nlp(masked_line)
+        #if opt_use_pipeline:
+        for mask_multiplier in range(1, 1+opt_max_masks):
+            print('multiplier', mask_multiplier)
+            multi_mask = mask_multiplier * '[MASK]'
+            multi_masked_line = masked_line.replace('[MASK]', multi_mask)
+            print(multi_masked_line)
+            encoded = tokeniser(multi_masked_line)
+            print(tokeniser.convert_ids_to_tokens(encoded['input_ids']))
+            if not '[MASK]' in masked_line:
+                break
+            outputs = nlp(multi_masked_line)
             if opt_output_tsv:
                 print('Rank\tToken\tScore\tID')
             for index, output in enumerate(outputs[:opt_top_k]):
@@ -169,8 +184,8 @@ def main():
                 else:
                     print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}")
             print("\n")
-        else:
-            raise NotImplementedError
+        #else:
+        #    raise NotImplementedError
 
 if __name__ == '__main__':
     main()
