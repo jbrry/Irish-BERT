@@ -11,6 +11,7 @@ import sys
 from transformers import pipeline
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 from transformers import AutoModelWithLMHead
+from transformers import BertTokenizer
 import torch
 
 # Python 3
@@ -39,7 +40,7 @@ masked_line=f"Ceoltóir {MASK} ab ea Johnny Cash"
 name2path = {
     'electra':   'models/ga_bert/output/pytorch/electra_base/',
     'gaelectra': 'models/ga_bert/output/pytorch/gabert-electra/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/',
-    'gabert':    'models/ga_bert/output/pytorch/gabert/pytorch/',
+    'gabert':    'models/ga_bert/output/pytorch/gabert/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8',
     'mbert':     'models/multilingual_bert/output/pytorch/multi_cased_L-12_H-768_A-12/',
     'gambert':   'models/multilingual_bert/output/pytorch/???/',
 }
@@ -75,17 +76,26 @@ Options:
     --help                  Show this message
 """)
 
+# masked_lines=[
+#     "Is é Deireadh Fómhair an [MASK] mí den bhliain.",
+#     "Ceoltóir [MASK] ab ea Johnny Cash.",
+#     "Ba [MASK] é Oscar Wilde.",
+#     "Tá Coláiste na Tríonóide lonnaithe i [MASK].",
+#     "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK].",
+#     "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK] Átha Cliath.",
+#     "Tá Coláiste na Tríonóide lonnaithe i lár na [MASK].",
+#     "Is í an [MASK] an t-ábhar is fearr liom.",
+#     "[MASK] an dath is fearr liom.",
+# ]
+
+# masked_lines=[
+#     "Show me the [MASK]."
+# ]
+
 masked_lines=[
-    "Is é Deireadh Fómhair an [MASK] mí den bhliain.",
-    "Ceoltóir [MASK] ab ea Johnny Cash.",
-    "Ba [MASK] é Oscar Wilde.",
     "Tá Coláiste na Tríonóide lonnaithe i [MASK].",
-    "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK].",
-    "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK] Átha Cliath.",
-    "Tá Coláiste na Tríonóide lonnaithe i lár na [MASK].",
-    "Is í an [MASK] an t-ábhar is fearr liom.",
-    "[MASK] an dath is fearr liom.",
 ]
+
 
 def line_reader(filename):
     if filename == '-':
@@ -109,6 +119,7 @@ def main():
     # https://github.com/huggingface/transformers/issues/3619
     opt_max_masks    = 1
     opt_output_tsv   = False
+    opt_do_lower_case = False
     opt_help    = False
     opt_debug   = False
     opt_verbose = False
@@ -131,6 +142,8 @@ def main():
             del sys.argv[1]
         elif option in ('--tsv', '--output-tsv'):
             opt_output_tsv = True
+        elif option in ('--lc', '--do-lower-case'):
+            opt_do_lower_case = True
         elif option in ('--from', '--read-from'):
             masked_lines = line_reader(sys.argv[1])
             del sys.argv[1]
@@ -152,15 +165,16 @@ def main():
         masked_lines = line_reader(sys.argv[1])
     # prepare model
     model_path = os.path.abspath(name2path[opt_model_name])
+
     if opt_use_pipeline:
         # Usage case 1: Huggingface pipeline module
         nlp = pipeline(
             "fill-mask",
             model = model_path,
         )
-        tokeniser = nlp.tokenizer
+        tokeniser = BertTokenizer.from_pretrained(model_path, do_lower_case=opt_do_lower_case)
     else:
-        tokeniser = AutoTokenizer.from_pretrained(model_path)
+        tokeniser = AutoTokenizer.from_pretrained(model_path, do_lower_case=opt_do_lower_case)
         model = AutoModelWithLMHead.from_pretrained(model_path)
     assert '[MASK]' == tokeniser.mask_token
     for masked_line in masked_lines:
@@ -184,8 +198,8 @@ def main():
                 else:
                     print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}")
             print("\n")
-        #else:
-        #    raise NotImplementedError
+        else:
+           raise NotImplementedError
 
 if __name__ == '__main__':
     main()
