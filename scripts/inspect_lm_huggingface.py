@@ -76,26 +76,17 @@ Options:
     --help                  Show this message
 """)
 
-# masked_lines=[
-#     "Is é Deireadh Fómhair an [MASK] mí den bhliain.",
-#     "Ceoltóir [MASK] ab ea Johnny Cash.",
-#     "Ba [MASK] é Oscar Wilde.",
-#     "Tá Coláiste na Tríonóide lonnaithe i [MASK].",
-#     "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK].",
-#     "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK] Átha Cliath.",
-#     "Tá Coláiste na Tríonóide lonnaithe i lár na [MASK].",
-#     "Is í an [MASK] an t-ábhar is fearr liom.",
-#     "[MASK] an dath is fearr liom.",
-# ]
-
-# masked_lines=[
-#     "Show me the [MASK]."
-# ]
-
 masked_lines=[
+    "Is é Deireadh Fómhair an [MASK] mí den bhliain.",
+    "Ceoltóir [MASK] ab ea Johnny Cash.",
+    "Ba [MASK] é Oscar Wilde.",
     "Tá Coláiste na Tríonóide lonnaithe i [MASK].",
+    "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK].",
+    "Tá Coláiste na Tríonóide lonnaithe i gContae [MASK] Átha Cliath.",
+    "Tá Coláiste na Tríonóide lonnaithe i lár na [MASK].",
+    "Is í an [MASK] an t-ábhar is fearr liom.",
+    "[MASK] an dath is fearr liom.",
 ]
-
 
 def line_reader(filename):
     if filename == '-':
@@ -198,8 +189,8 @@ def main():
                 else:
                     print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}")
             print("\n")
-        else:
-           raise NotImplementedError
+        # else:
+        #    raise NotImplementedError
 
 if __name__ == '__main__':
     main()
