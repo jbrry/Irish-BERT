@@ -46,7 +46,7 @@ name2path = {
 
 
 def print_usage():
-    print('Usage: %s [options]' %(os.path.split(sys.argv[0])[-1]))
+    print('Usage: %s [options] [FILENAME]' %(os.path.split(sys.argv[0])[-1]))
     print("""
 Options:
 
@@ -62,6 +62,8 @@ Options:
 
     --from  FILENAME        Read input lines from first column of file,
                             - = stdin
+                            If this is the last option `--from` can be
+                            omitted.
                             (Default: process hard-coded lines)
 
     --help                  Show this message
@@ -128,11 +130,14 @@ def main():
             print('Unsupported option %s' %option)
             opt_help = True
             break
-    if len(sys.argv) != 1:
+    if len(sys.argv) not in (1,2):
         opt_help = True
     if opt_help:
         print_usage()
         sys.exit(0)
+    if len(sys.argv) == 2:
+        # FILENAME without "--from"
+        masked_lines = line_reader(sys.argv[1])
     # prepare model
     model_path = os.path.abspath(name2path[opt_model_name])
     if opt_use_pipeline:
