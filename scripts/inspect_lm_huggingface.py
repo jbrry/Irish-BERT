@@ -18,10 +18,6 @@ import torch
 
 # Usage:
 # Requires `transformers` library: `pip install transformers`
-# You will need to download the model(s) from Google Drive and store it locally.
-# Prepare symlinks in the `models` folder to match paths below or, if you do not
-# plan to commit changes to the main repo, adjust `model_path` to your local
-# directory containing the BERT model.
 # Run: python scripts/inspect_lm_huggingface.py
 
 """
@@ -38,6 +34,12 @@ masked_line=f"Ceoltóir {MASK} ab ea Johnny Cash"
 """
 
 name2path = {
+    # You will need to download the model(s) from Google Drive and store it locally.
+    # If you have not enough space under 'models/' use a symlink to point to your
+    # alternative location.
+    # mbert can be downloaded from the bert github page.
+    # If your download is missing a tokeniser configuration you can find a suitable
+    # on in 'models/ga_bert/'.
     'electra':   'models/ga_bert/output/pytorch/electra_base/',
     'gaelectra': 'models/ga_bert/output/pytorch/gabert-electra/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/',
     'gabert':    'models/ga_bert/output/pytorch/gabert/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8',
