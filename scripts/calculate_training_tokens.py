@@ -14,9 +14,10 @@ def epoch_calculator(name, batch_size, seq_len, steps, corpus_size):
     total = tokens_per_batch * steps
     epochs = total / corpus_size
 
-    print(f"{name} with {steps} steps:"
-        f" Tokens seen: {total/1000000}M"
-        f" Approx. {epochs:.2f} epochs over a corpus size of {corpus_size/1000000:.2f}M tokens.")
+    print(f"{name} with {steps} steps, batch size {batch_size} and seq len: {seq_len}\n"
+        f"Tokens seen: {total/1000000}M"
+        f" Approx. {epochs:.2f} epochs over a corpus size of {corpus_size/1000000:.2f}M tokens.\n")
+        
 
 # Original BERT paper
 name = "BERT"
@@ -38,7 +39,7 @@ epochs = epoch_calculator(name, batch_size, seq_len, steps, corpus_size)
 name = "GaBERT-base"
 corpus_size = 159429404 # cat ga/filtered-texts/* | wc = 7937938 159429404 919788128
 seq_len = 128
-batch_size = 64
+batch_size = 32
 steps = 900000
 epochs = epoch_calculator(name, batch_size, seq_len, steps, corpus_size)
 
@@ -55,5 +56,5 @@ name = "GaELECTRA-base"
 corpus_size = 159429404
 seq_len = 512
 batch_size = 256
-steps = 100000
+steps = 50000
 epochs = epoch_calculator(name, batch_size, seq_len, steps, corpus_size)
