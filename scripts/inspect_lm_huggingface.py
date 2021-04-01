@@ -86,6 +86,10 @@ masked_lines=[
     "Tá Coláiste na Tríonóide lonnaithe i lár na [MASK].",
     "Is í an [MASK] an t-ábhar is fearr liom.",
     "[MASK] an dath is fearr liom.",
+    'Ar ith [MASK] an dinnéar?',
+    'ar ith [MASK] an dinnear?',
+    'Dúirt sé [MASK] múinteoir é.',
+    'duirt se [MASK] muinteoir e.',
 ]
 
 def line_reader(filename):
@@ -171,7 +175,7 @@ def main():
     for masked_line in masked_lines:
         #if opt_use_pipeline:
         for mask_multiplier in range(1, 1+opt_max_masks):
-            print('multiplier', mask_multiplier)
+            #print('multiplier', mask_multiplier)
             multi_mask = mask_multiplier * '[MASK]'
             multi_masked_line = masked_line.replace('[MASK]', multi_mask)
             print(multi_masked_line)
