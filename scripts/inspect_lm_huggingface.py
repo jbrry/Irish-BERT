@@ -73,6 +73,9 @@ Options:
                             underlying library.
                             (Default: 1 = no extra copies)
 
+    --no-subwords           Do not print subword tokenisation of input.
+                            (Default: show python list of subword tokens)
+
     --help                  Show this message
 """)
 
@@ -114,7 +117,7 @@ def main():
     # https://github.com/huggingface/transformers/issues/3619
     opt_max_masks    = 1
     opt_output_tsv   = False
-    opt_do_lower_case = False
+    opt_print_subwords = True
     opt_help    = False
     opt_debug   = False
     opt_verbose = False
@@ -137,11 +140,11 @@ def main():
             del sys.argv[1]
         elif option in ('--tsv', '--output-tsv'):
             opt_output_tsv = True
-        elif option in ('--lc', '--do-lower-case'):
-            opt_do_lower_case = True
         elif option in ('--from', '--read-from'):
             masked_lines = line_reader(sys.argv[1])
             del sys.argv[1]
+        elif option in ('--no-subwords', '--do-not-print-subwords'):
+            opt_print_subwords = False
         elif option == '--debug':
             opt_debug = True
         elif option == '--verbose':
@@ -160,16 +163,17 @@ def main():
         masked_lines = line_reader(sys.argv[1])
     # prepare model
     model_path = os.path.abspath(name2path[opt_model_name])
-
+    if not os.path.exists(os.path.join(model_path, 'tokenizer_config.json')):
+        raise ValueError('Model is missing tokenizer_config.json')
     if opt_use_pipeline:
         # Usage case 1: Huggingface pipeline module
         nlp = pipeline(
             "fill-mask",
             model = model_path,
         )
-        tokeniser = BertTokenizer.from_pretrained(model_path, do_lower_case=opt_do_lower_case)
+        tokeniser = nlp.tokenizer
     else:
-        tokeniser = AutoTokenizer.from_pretrained(model_path, do_lower_case=opt_do_lower_case)
+        tokeniser = AutoTokenizer.from_pretrained(model_path)
         model = AutoModelWithLMHead.from_pretrained(model_path)
     assert '[MASK]' == tokeniser.mask_token
     for masked_line in masked_lines:
@@ -179,8 +183,9 @@ def main():
             multi_mask = mask_multiplier * '[MASK]'
             multi_masked_line = masked_line.replace('[MASK]', multi_mask)
             print(multi_masked_line)
-            encoded = tokeniser(multi_masked_line)
-            print(tokeniser.convert_ids_to_tokens(encoded['input_ids']))
+            if opt_print_subwords:
+                encoded = tokeniser(multi_masked_line)
+                print(tokeniser.convert_ids_to_tokens(encoded['input_ids']))
             if not '[MASK]' in masked_line:
                 break
             outputs = nlp(multi_masked_line)
@@ -192,7 +197,7 @@ def main():
                     print(f"{rank}\t{output['token_str']}\t{output['score']}\t{output['token']}")
                 else:
                     print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}")
-            print("\n")
+            print()
         # else:
         #    raise NotImplementedError
 
