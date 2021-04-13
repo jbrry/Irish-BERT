@@ -112,7 +112,8 @@ def main():
 
     # For why using sha512, see Joachim's answer on
     # https://stackoverflow.com/questions/41699857/initialize-pseudo-random-generator-with-a-string
-    random.seed(int(hashlib.sha512(opt_init_seed).hexdigest(), 16))
+    #random.seed(int(hashlib.sha512(opt_init_seed).hexdigest(), 16))
+    random.seed(int(opt_init_seed))
 
     max_length = opt_min_length
 
