@@ -24,6 +24,11 @@ else
     echo $'\n'"Downloading Oscar data for ga..."$'\n'
     rclone copy "${THEME_A_DCU}/ga_BERT/BERT_Preprocessing/raw-corpora/${FILENAME}" $OUTDIR --bwlimit 1000M --transfers 1
     if [ -f "${OUTDIR}/${FILENAME}" ]; then
+        # unzip/untar download
+        cd ${OUTDIR}
+        bzip2 -d oscar-ga-unshuffled.tar.bz2
+        tar -xf oscar-ga-unshuffled.tar
+        mv oscar/unshuffled/ga/oscar-ga-unshuffled.txt .
         echo "Done"
     else
         echo "Download failed"
