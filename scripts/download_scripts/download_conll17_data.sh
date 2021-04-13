@@ -44,13 +44,8 @@ for compressed in ${data}; do
   filestring="$(echo $base | cut -f1 -d ".")"
   conllu_file=${DATASET_DIR}/Irish/${filestring}.conllu
   
-  # convert conllu to text
-  perl scripts/conllu_to_text.pl --language=ga_idt < ${conllu_file}  > ${OUT_DIR}/${filestring}.txt
-	
-  # use udpipe model to tokenize/segment the raw text (otherwise the lines are not line-by-line):
-  # NOTE: these lines will be later tokenised/segmented by the wiki-bert-pipeline
-  #udpipe --tokenize --output horizontal ${UDPIPE_MODEL_DIR}/ga.udpipe ${DATASET_DIR}/${filestring}.txt > ${OUT_DIR}/${filestring}_tokenised.txt
-
+  cat ${conllu_file} | python scripts/get-conllu-text.py > ${OUT_DIR}/${filestring}.txt
+  
   # zip text file
   bzip2 ${OUT_DIR}/${filestring}.txt
 
