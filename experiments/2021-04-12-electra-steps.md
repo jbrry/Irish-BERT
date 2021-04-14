@@ -1,9 +1,14 @@
 
 # Results
-<img src="/assets/images/ELECTRA_steps_best_validation_dependencies_LAS.png" style="display: block; margin: 0 auto" />
 
-<img src="/assets/images/ELECTRA_steps_best_validation_feats_accuracy.png" style="display: block; margin: 0 auto" />
+### ELECTRA at every 100,000 Steps
 
-<img src="/assets/images/ELECTRA_steps_best_validation_upos_accuracy.png" style="display: block; margin: 0 auto" />
+The below results compare LAS, Morph. feats accuracy, POS accuracy and XPOS accuracy predicted by a multitask model using the ELECTRA discriminator checkpoint at every 100,000 pretraining steps.
 
-<img src="/assets/images/ELECTRA_steps_best_validation_xpos_accuracy.png" style="display: block; margin: 0 auto" />
+<img src="/assets/images/ELECTRA_steps_dependencies_LAS.png" style="display: block; margin: 0 auto" />
+
+<img src="/assets/images/ELECTRA_steps_feats_accuracy.png" style="display: block; margin: 0 auto" />
+
+<img src="/assets/images/ELECTRA_steps_upos_accuracy.png" style="display: block; margin: 0 auto" />
+
+<img src="/assets/images/ELECTRA_steps_xpos_accuracy.png" style="display: block; margin: 0 auto" />
