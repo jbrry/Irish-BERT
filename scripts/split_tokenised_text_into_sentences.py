@@ -379,6 +379,7 @@ def split_line(
 def print_line(line, wrap):
     if not wrap:
         print(line)
+        return
     on_this_line = 0
     tokens = []
     for token in line.split():
