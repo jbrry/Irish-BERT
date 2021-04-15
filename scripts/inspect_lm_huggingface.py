@@ -18,20 +18,9 @@ import torch
 
 # Usage:
 # Requires `transformers` library: `pip install transformers`
-# Run: python scripts/inspect_lm_huggingface.py
+# Run: python scripts/inspect_lm_huggingface.py --help
 
-"""
-Based on the guide: https://huggingface.co/transformers/usage.html#masked-language-modeling
-
-Some sample lines to try:
-# TODO: Why curly brackets here but square brackets below?
-masked_line=f"Is é an t-ábhar is fearr liom ná {MASK}"
-masked_line=f"Tá Coláiste na Tríonóide lonnaithe i gcontae na {MASK}"
-masked_line=f"Is {MASK} Éireannach é Oscar Wilde"
-masked_line=f"Is é aigéaneolaíocht staidéar na {MASK}"
-masked_line=f"Is é Deireadh Fómhair nó Mí Dheireadh Fómhair an {MASK} mí den bhliain"
-masked_line=f"Ceoltóir {MASK} ab ea Johnny Cash"
-"""
+# Based on the guide: https://huggingface.co/transformers/usage.html#masked-language-modeling
 
 name2path = {
     # You will need to download the model(s) from Google Drive and store it locally.
