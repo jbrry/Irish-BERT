@@ -40,13 +40,14 @@ name2path = {
     # mbert can be downloaded from the bert github page.
     # If your download is missing a tokeniser configuration you can find a suitable
     # on in 'models/ga_bert/'.
-    'electra':   'models/ga_bert/output/pytorch/electra_base/',
-    'gaelectra': 'models/ga_bert/output/pytorch/gabert-electra/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/',
-    'gabert':    'models/ga_bert/output/pytorch/gabert/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8',
-    'mbert':     'models/multilingual_bert/output/pytorch/multi_cased_L-12_H-768_A-12/',
-    'gambert':   'models/multilingual_bert/output/pytorch/???/',
+    'electra':   ('local', 'models/ga_bert/output/pytorch/electra_base/',),
+    'gaelectra': ('local', 'models/ga_bert/output/pytorch/gabert-electra/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/',),
+    'gabert':    ('local', 'models/ga_bert/output/pytorch/gabert/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8',),
+    'mbert':     ('repo',  'bert-base-multilingual-cased',),
+    'mbertdl':   ('local', 'models/multilingual_bert/output/pytorch/multi_cased_L-12_H-768_A-12/',),
+    'gambert':   ('local', 'models/multilingual_bert/output/pytorch/???/',),
+    'wikibert':  ('repo',  'TurkuNLP/wikibert-base-ga-cased',),
 }
-
 
 def print_usage():
     print('Usage: %s [options] [FILENAME]' %(os.path.split(sys.argv[0])[-1]))
@@ -54,7 +55,7 @@ def print_usage():
 Options:
 
     --model  NAME           What model to use, one of electra, gaelectra,
-                            gabert, mbert and gambert
+                            gabert, mbert, gambert and wikibert
                             (Default: gabert)
 
     --top  NUMBER           How many top predictions to output
@@ -164,19 +165,25 @@ def main():
         # FILENAME without "--from"
         masked_lines = line_reader(sys.argv[1])
     # prepare model
-    model_path = os.path.abspath(name2path[opt_model_name])
-    if not os.path.exists(os.path.join(model_path, 'tokenizer_config.json')):
-        raise ValueError('Model is missing tokenizer_config.json')
+    model_type, model_path_or_name = name2path[opt_model_name]
+    if model_type == 'local':
+        model_path_or_name = os.path.abspath(model_path_or_name)
+        if not os.path.exists(os.path.join(model_path_or_name, 'tokenizer_config.json')):
+            raise ValueError('Model is missing tokenizer_config.json')
+    elif model_type == 'repo':
+        pass
+    else:
+        raise ValueError('unknown model type in hard-coded configuration for %s' %opt_model_name)
     if opt_use_pipeline:
         # Usage case 1: Huggingface pipeline module
         nlp = pipeline(
             "fill-mask",
-            model = model_path,
+            model = model_path_or_name,
         )
         tokeniser = nlp.tokenizer
     else:
-        tokeniser = AutoTokenizer.from_pretrained(model_path)
-        model = AutoModelWithLMHead.from_pretrained(model_path)
+        tokeniser = AutoTokenizer.from_pretrained(model_path_or_name)
+        model = AutoModelWithLMHead.from_pretrained(model_path_or_name)
     assert '[MASK]' == tokeniser.mask_token
     for masked_line in masked_lines:
         #if opt_use_pipeline:
