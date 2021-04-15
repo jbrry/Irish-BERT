@@ -58,6 +58,10 @@ Options:
                             gabert, mbert, gambert and wikibert
                             (Default: gabert)
 
+                            Warning: At the time of writing, the wikibert
+                            model is missing the "do_lower_case": false
+                            configuration file for the tokeniser.
+
     --top  NUMBER           How many top predictions to output
                             (Default: 5)
 
