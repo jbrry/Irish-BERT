@@ -45,7 +45,9 @@ def print_usage():
 Options:
 
     --model  NAME           What model to use, one of electra, gaelectra,
-                            gabert, mbert, gambert and wikibert
+                            gabert, mbert, gambert and wikibert, and, for
+                            local mbert/wikibert copies, mbertdl and
+                            wikibertdl
                             (Default: gabert)
 
                             Warning: At the time of writing, the wikibert
