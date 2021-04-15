@@ -36,6 +36,7 @@ name2path = {
     'mbertdl':   ('local', 'models/multilingual_bert/output/pytorch/multi_cased_L-12_H-768_A-12/',),
     'gambert':   ('local', 'models/multilingual_bert/output/pytorch/???/',),
     'wikibert':  ('repo',  'TurkuNLP/wikibert-base-ga-cased',),
+    'wikibertdl': ('local',  'models/TurkuNLP/wikibert-base-ga-cased',),
 }
 
 def print_usage():
