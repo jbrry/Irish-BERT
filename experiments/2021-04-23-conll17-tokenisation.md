@@ -3,7 +3,8 @@
 
 The segmenter in wiki-bert-pipeline operates on [a line-by-line basis](https://github.com/jbrry/wiki-bert-pipeline/blob/bfe374cde2f0b4a7d517514b1ab5d4bd2c86e9c6/scripts/udtokenize.py#L62) which means that if the inputs are paragraphs of text spanning over multiple lines, the script will split at the end of the line even if it is not where the tokeniser predicts the final token to be.
 
-To analyse the effect of this tokenisation bug, a backup copy of the data directory was made: `conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8-conll17-tokenization-bug-backup` and in the original `conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8`, only the `conll17`-related files were replaced.
+To analyse the effect of this tokenisation bug, a backup copy of the data directory was made: `conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8-conll17-tokenization-bug-backup` (this is the bugged version). In the original repository, `conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8` only the `conll17`-related files were replaced.  Notice how the tokenisation is now fixed below:
+
 
 ```
 # bugged
@@ -21,12 +22,6 @@ tomhaltóir sin , a thabharfar breithiúnas sa chás .
 ghabáil do na glantsluagaib arna Nach rachainn 'un cainte léi .
 Throid teaghlach na Hapsburg ( na hImpirí Ferdinand II agus III agus Pilib IV na
 
-```
-
-
-In the original repository, all `conll17` related files were removed and the pipeline was run again (with the conll17 tokenisation bug fixed). Notice how the tokenisation is now fixed below:
-
-```
 # bug fix
 
 (opusfilter) jbarry@g102:~/spinning-storage/jbarry/ga_BERT/wiki-bert-pipeline/data/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/ga/filtered-texts$ head conll17_00
@@ -59,10 +54,12 @@ The below are just some checks to make sure that the only difference to the pre-
 (opusfilter) jbarry@g102:~/spinning-storage/jbarry/ga_BERT/wiki-bert-pipeline/data/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/ga/tfrecords/seq-128$ du -ch conll17_*  | grep total
 2.3G    total
 ```
+
 The below compares md5sums of the conll17 and gdrive data (other sources are not listed for space reasons but they are the same files). Notice that the conll17 files are different but gdrive are the same. There are also more conll17 files in the bugged version (due to the increased number of sentences from the tokenisation bug).
 
 ```
 # bugged
+
 (base) jbarry@g001:~/spinning-storage/jbarry/ga_BERT/wiki-bert-pipeline/data/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8-conll17-tokenization-bug-backup/ga/tfrecords/seq-128$ md5sum *
 3ad706cea7bfa4fb2ba298c9a3d7edce  conll17_00.tfrecord
 1cc7fc33328abca9a6825865fda22999  conll17_01.tfrecord
@@ -98,6 +95,7 @@ d36bfb73b30bbaa97da73d1ea4612afc  gdrive_09.tfrecord
 58db4ce3ab63aed5389863f4745d83b7  gdrive_12.tfrecord
 
 # bug fix
+
 (base) jbarry@g001:~/spinning-storage/jbarry/ga_BERT/wiki-bert-pipeline/data/conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8/ga/tfrecords/seq-128$ md5sum *
 754cce03bd9ed1277bda69b6d978dd88  conll17_00.tfrecord
 980e2db08ed6ebe0eb1e28cac9e722b2  conll17_01.tfrecord
