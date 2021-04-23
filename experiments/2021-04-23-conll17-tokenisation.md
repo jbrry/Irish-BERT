@@ -3,7 +3,7 @@
 
 The segmenter in wiki-bert-pipeline operates on [a line-by-line basis](https://github.com/jbrry/wiki-bert-pipeline/blob/bfe374cde2f0b4a7d517514b1ab5d4bd2c86e9c6/scripts/udtokenize.py#L62) which means that if the inputs are paragraphs of text spanning over multiple lines, the script will split at the end of the line even if it is not where the tokeniser predicts the final token to be.
 
-To analyse the effect of this tokenisation bug, a backup copy of the data directory was made: `conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8-conll17-tokenization-bug-backup`
+To analyse the effect of this tokenisation bug, a backup copy of the data directory was made: `conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8-conll17-tokenization-bug-backup` and in the original `conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8`, only the `conll17`-related files were replaced.
 
 ```
 # bugged
