@@ -107,8 +107,8 @@ n_lines_2 = len(lines2)
 if opt_verbose >= 2:
     sys.stderr.write('Number of lines: %s and %d\n' %(n_lines_1, n_lines_2))
 
-max_buckets_1 = n_lines_1 // 3   # cannot form line triplets with more buckets
-max_buckets_2 = n_lines_2 // 3
+max_buckets_1 = n_lines_1 // 8   # need a few lines per buckets to have a reasonable chance of matching line triplets
+max_buckets_2 = n_lines_2 // 8
 
 max_buckets_1 = min(max_buckets_1, opt_max_box_size)   # user-specific maximum size
 max_buckets_2 = min(max_buckets_2, opt_max_box_size)   # user-specific maximum size
@@ -181,8 +181,11 @@ def dither_and_pack(colour, x, y):
             cvalue = bvalue
         else:
             cvalue = int(255.99 * cvalue)
-        if cvalue < 0 or cvalue > 255:
-            cvalue = 96 + int(64*random.random())
+        # safeguard against out of range values
+        # TODO: print warning (but not on every occasion as if
+        #       there is something wrong there could be many)
+        if cvalue < 0:   cvalue = 0
+        if cvalue > 255: cvalue = 255
         retval.append(chr(cvalue))
     retval.append(chr(255))   # opaque
     return b''.join(retval)
