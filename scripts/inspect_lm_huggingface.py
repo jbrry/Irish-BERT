@@ -68,8 +68,8 @@ Options:
 
     --multi-mask  NUMBER    Also make predictions for inputs with up to
                             NUMBER copies of [MASK].
-                            At the time of writing not supported by the
-                            underlying library.
+                            At the time of writing, the underlying library
+                            does not support this.
                             (Default: 1 = no extra copies)
 
     --no-subwords           Do not print subword tokenisation of input.
@@ -181,6 +181,10 @@ def main():
         tokeniser = AutoTokenizer.from_pretrained(model_path_or_name)
         model = AutoModelWithLMHead.from_pretrained(model_path_or_name)
     assert '[MASK]' == tokeniser.mask_token
+    # check tokeniser is cased
+    encoded = tokeniser('A')
+    if tokeniser.convert_ids_to_tokens(encoded['input_ids'])[1] != 'A':
+        raise ValueError('Tokeniser does not seem to be cased')
     for masked_line in masked_lines:
         #if opt_use_pipeline:
         for mask_multiplier in range(1, 1+opt_max_masks):
