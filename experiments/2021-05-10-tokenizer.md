@@ -5,8 +5,9 @@ In the experiments below, the SentencePiece tokenizer was replaced with a WordPi
 
 
 #### Vocab additions and Subtractions
-Here is a diff on the two vocabs:
-[sentencepiece_wordpiece_conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8_diffs.txt](https://github.com/jbrry/Irish-BERT/files/6455063/sentencepiece_wordpiece_conll17_gdrive_NCI_oscar_paracrawl_filtering_basic%2Bchar-1.0%2Blang-0.8_diffs.txt)
+Here is a diff on the two vocabs. `-` and `+` indicates what was removed and added when using the WordPiece tokenizer. 
+[sentencepiece_wordpiece_conll17_gdrive_NCI_oscar_paracrawl_filtering_basic+char-1.0+lang-0.8_diffs.txt](https://github.com/jbrry/Irish-BERT/files/6455084/sentencepiece_wordpiece_conll17_gdrive_NCI_oscar_paracrawl_filtering_basic%2Bchar-1.0%2Blang-0.8_diffs.txt)
+
 
 
 ### Comparison of Multi-task Dependency Parser With SentencePiece and WordPiece Tokenizers
