@@ -46,15 +46,18 @@ def main(argv):
     # The vocab entries are located in ["model"]["vocab"]
     tokenizer.save(f"{args.outdir}/vocab.json", True)
 
+    # read the json file back in to easily access
+    # the vocabulary elements that interest us
     with open(f"{args.outdir}/vocab.json") as json_file:
         data = json.load(json_file)
         vocab = data["model"]["vocab"]
-        
+        # get list of all words (subword units) in the vocab
         words = []
         for w in vocab:
             words.append(w)
         json_file.close()
 
+    # write vocab in the order found in the json file
     with open(f"{args.outdir}/vocab.txt", "w") as txt_file:
         for i, w in enumerate(words, start=1):
             txt_file.write(w + "\n")
