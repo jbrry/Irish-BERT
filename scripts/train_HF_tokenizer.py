@@ -54,6 +54,7 @@ def main(argv):
         # get list of all words (subword units) in the vocab
         words = []
         for w in vocab:
+            assert vocab[w] == len(words)  # check index order
             words.append(w)
         json_file.close()
 
@@ -64,7 +65,7 @@ def main(argv):
             # most implementations write the first special symbol, then the unused entries
             if i == 1:
                 for j in range(args.number_unused):
-                    txt_file.write(f"[unused{j}]" + "\n")
+                    txt_file.write(f"[unused{j}]\n")
 
         txt_file.close()
         print(f"Finished writing vocabulary to {args.outdir}/vocab.txt")
