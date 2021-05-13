@@ -12,6 +12,12 @@ def argparser():
                     help='Where to write output.')
     ap.add_argument('--number_unused', type=int,
                     help='Number of unused entries to write.')
+    ap.add_argument('--min_freq', type=int, default=2,
+                    help='Frequency threshold.')
+    ap.add_argument('--vocab_size', type=int, default=30000,
+                    help='Size of the vocabulary.')
+    ap.add_argument('--limit_alphabet', type=int, default=1000,
+                    help='Limit the size of the alphabet.')
     ap.add_argument('file', nargs='+')
     return ap
 
@@ -34,11 +40,11 @@ def main(argv):
 
     trainer = tokenizer.train(
         training_file,
-        vocab_size=30000,
-        min_frequency=2,
+        vocab_size=args.vocab_size,
+        min_frequency=args.min_freq,
         show_progress=True,
         special_tokens=['[PAD]', '[UNK]', '[CLS]', '[SEP]', '[MASK]'],
-        limit_alphabet=1000,
+        limit_alphabet=args.limit_alphabet,
         wordpieces_prefix="##"
     )
 
