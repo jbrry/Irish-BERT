@@ -48,7 +48,8 @@ class PretrainingConfig(object):
     # training settings
     self.iterations_per_loop = 200
     self.num_train_steps = 500000
-    self.save_checkpoints_steps = int(self.num_train_steps * .2) # save just 5 checkpoints per run 
+    #self.save_checkpoints_steps = int(self.num_train_steps * .2) # save just 5 checkpoints per run 
+    self.save_checkpoints_steps = 20000 # do a high number so we can evaluate model at 24h
     self.num_eval_steps = 100
     self.keep_checkpoint_max = 0 # maximum number of recent checkpoint files to keep;
                                  # change to 0 or None to keep all checkpoints
@@ -85,11 +86,11 @@ class PretrainingConfig(object):
 
     # TPU settings
     self.use_tpu = False
-    #self.num_tpu_cores = 8
-    #self.tpu_job_name = None
-    #self.tpu_name = "gabert-electra"  # cloud TPU to use for training
-    #self.tpu_zone = None  # GCE zone where the Cloud TPU is located in
-    #self.gcp_project = None  # project name for the Cloud TPU-enabled project
+    self.num_tpu_cores = 8
+    self.tpu_job_name = None
+    self.tpu_name = "gabert-electra"  # cloud TPU to use for training
+    self.tpu_zone = None  # GCE zone where the Cloud TPU is located in
+    self.gcp_project = None  # project name for the Cloud TPU-enabled project
 
     # default locations of data files
     self.pretrain_tfrecords = os.path.join(
