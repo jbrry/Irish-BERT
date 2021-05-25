@@ -105,6 +105,8 @@ The Wikipedia data is collected later on when running the `wiki-bert-pipeline`, 
 To prepare the data for BERT pretraining, you will need to install our fork of the `wiki-bert-pipeline`. In particular, you will need to switch to the `external_data` branch.
 
 ```bash
+# if you haven't already cloned wiki-bert-pipeline
+cd to parent directory of this folder, e.g. 'ga_BERT'
 git clone https://github.com/jbrry/wiki-bert-pipeline.git
 cd wiki-bert-pipeline
 git checkout external_data
