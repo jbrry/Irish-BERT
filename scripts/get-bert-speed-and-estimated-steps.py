@@ -47,7 +47,7 @@ assert start is not None
 
 spent_time = step2time[latest_step] - start
 
-print('Run for %.1f hours so far' %(spent_time/3600.0))
+print('Running for %.1f hours so far' %(spent_time/3600.0))
 
 print('Overall speed: %.1f steps per hour' %(3600.0*latest_step/spent_time))
 
