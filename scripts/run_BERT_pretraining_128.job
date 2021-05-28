@@ -17,6 +17,7 @@ FILE_DESC=$3
 
 # original BERT paper uses 1% as the number of warmup steps
 NUM_WARMUP_STEPS=` expr $STEPS / 100`
+LEARNING_RATE=1e-4
 
 echo "Training BERT for $STEPS steps"
 echo "using $NUM_WARMUP_STEPS warmup steps ..."
@@ -44,10 +45,18 @@ fi
 if [ $# -gt 3 ]; then
   echo "More than 3 arguments passed, assuming this is the step number to initialize from"
   INIT_STEP=$4
+  DIFF=` expr $STEPS - $INIT_STEP`
+  NUM_WARMUP_STEPS=` expr $DIFF / 100`
+  
+  LEARNING_RATE=`perl -E "say $LEARNING_RATE * ($INIT_STEP + $DIFF) / $DIFF"`
+  echo "Using updated learning rate of $LEARNING_RATE"
+  
+  OUTPUT_DIR="${MODEL_DIR}/output/${FILE_DESC}_${INIT_STEP}"
   extra_args="--init_checkpoint=${OUTPUT_DIR}/model.ckpt-$INIT_STEP"
 else
   extra_args=""
 fi
+
 
 python ${BERT_DIR}/run_pretraining.py \
 	--input_file=${DATA_DIR}/* \
@@ -60,6 +69,6 @@ python ${BERT_DIR}/run_pretraining.py \
 	--max_predictions_per_seq=20 \
 	--num_train_steps=${STEPS} \
 	--num_warmup_steps=${NUM_WARMUP_STEPS} \
-	--learning_rate=1e-4 \
+	--learning_rate=${LEARNING_RATE} \
         ${extra_args}
 
