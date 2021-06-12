@@ -26,8 +26,8 @@ echo "Training BERT for $STEPS steps"
 echo "using $NUM_WARMUP_STEPS warmup steps ..."
 
 BERT_DIR=${HOME}/gabert/bert
-DATA_DIR="gs://$BUCKET_NAME/data/gabert/pretraining_data/$FILE_DESC/ga/tfrecords/seq-128"
-OUTPUT_DIR="gs://$BUCKET_NAME/data/gabert/model_output/${FILE_DESC}"
+DATA_DIR="gs://$BUCKET_NAME/data/gabert-v2/pretraining_data/$FILE_DESC/ga/tfrecords/seq-128"
+OUTPUT_DIR="gs://$BUCKET_NAME/data/gabert-v2/model_output/${FILE_DESC}"
 
 BERT_CONFIG=${HOME}/gabert/Irish-BERT/models/ga_bert/bert_config.json
 
@@ -46,11 +46,12 @@ python3 ${BERT_DIR}/run_pretraining.py \
 	--do_train=True \
 	--do_eval=False \
 	--bert_config_file=${BERT_CONFIG} \
-	--train_batch_size=64 \
+	--train_batch_size=128 \
 	--max_seq_length=128 \
 	--max_predictions_per_seq=20 \
 	--num_train_steps=${STEPS} \
     	--save_checkpoint_steps=100000 \
+	--keep_checkpoint_max=0 \
 	--num_warmup_steps=${NUM_WARMUP_STEPS} \
 	--learning_rate=1e-4 \
     	--use_tpu=True \
