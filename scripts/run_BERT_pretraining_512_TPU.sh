@@ -21,7 +21,7 @@ FILE_DESC=$4
 
 
 # We are only doing 100,000 steps at seq_len=512
-NUM_WARMUP_STEPS=10000
+NUM_WARMUP_STEPS=0
 
 echo "Training BERT for $STEPS steps"
 echo "using $NUM_WARMUP_STEPS warmup steps ..."
@@ -51,7 +51,8 @@ python3 ${BERT_DIR}/run_pretraining.py \
 	--max_seq_length=512 \
 	--max_predictions_per_seq=77 \
 	--num_train_steps=${STEPS} \
-	--num_warmup_steps=${NUM_WARMUP_STEPS} \
+	--save_checkpoint_steps=100000 \
+	--keep_checkpoint_max=0 \
 	--learning_rate=1e-4 \
     	--use_tpu=True \
     	--tpu_name=$TPU_NAME \
