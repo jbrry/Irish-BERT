@@ -42,9 +42,9 @@ else
   extra_args=""
 fi
 
-if [ $# -gt 4 ]; then
-   echo "More than 4 arguments passed, assuming this is the step number to initialize from"
-   INIT_STEP=$5
+if [ $# -gt 5 ]; then
+   echo "More than 5 arguments passed, assuming this is the step number to initialize from"
+   INIT_STEP=$6
    extra_args="--init_checkpoint=${OUTPUT_DIR}/model.ckpt-$INIT_STEP"
  else
    extra_args=""
