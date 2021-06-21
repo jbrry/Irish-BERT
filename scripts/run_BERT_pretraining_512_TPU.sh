@@ -34,7 +34,7 @@ BERT_DIR=${HOME}/gabert/bert
 DATA_DIR="gs://$BUCKET_NAME/data/gabert-v2/pretraining_data/$FILE_DESC/ga/tfrecords/seq-512"
 OUTPUT_DIR="gs://$BUCKET_NAME/data/gabert-v2/model_output/${FILE_DESC}"
 
-BERT_CONFIG=${HOME}/gabert/Irish-BERT/models/ga_bert/bert_config.json
+BERT_CONFIG=${HOME}/gabert/Irish-BERT/models/${BERT_MODEL}/bert_config.json
 
 if [ $# -gt 5 ]; then
    echo "More than 5 arguments passed, assuming this is the step number to initialize from"
