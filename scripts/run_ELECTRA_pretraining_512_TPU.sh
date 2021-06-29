@@ -18,5 +18,5 @@ cp ${HOME}/gabert/Irish-BERT/scripts/configure_electra_pretraining_base.py ${ELE
 #gsutil cp vocab.txt gs://gabert/data/gabert-v2/pretraining_data/electra/conll17_gdrive_NCI_oscar_paracrawl_wiki_filtering_document-heuristic
 
 # run ELECTRA
-python ${ELECTRA_DIR}/run_pretraining.py --data-dir ${DATA_DIR} --model-name "electra-base-${FILE_DESC}"
+python3 ${ELECTRA_DIR}/run_pretraining.py --data-dir ${DATA_DIR} --model-name "electra-base-${FILE_DESC}"
 
