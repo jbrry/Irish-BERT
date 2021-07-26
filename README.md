@@ -1,6 +1,31 @@
 # Irish-BERT
 Repository to store helper scripts for creating an Irish BERT model.
 
+## Pretrained models
+The pretrained models are available to download from https://huggingface.co/models
+*   **[`gaBERT v1`](https://huggingface.co/DCU-NLP/bert-base-irish-cased-v1)**: Uses BERT-Base architecture.
+
+```
+from transformers import AutoModelWithLMHead, AutoTokenizer
+import torch
+
+tokenizer = AutoTokenizer.from_pretrained("DCU-NLP/bert-base-irish-cased-v1")
+model = AutoModelWithLMHead.from_pretrained("DCU-NLP/bert-base-irish-cased-v1")
+
+sequence = f"Ceoltóir {tokenizer.mask_token} ab ea Johnny Cash."
+
+input = tokenizer.encode(sequence, return_tensors="pt")
+mask_token_index = torch.where(input == tokenizer.mask_token_id)[1]
+
+token_logits = model(input)[0]
+mask_token_logits = token_logits[0, mask_token_index, :]
+
+top_5_tokens = torch.topk(mask_token_logits, 5, dim=1).indices[0].tolist()
+
+for token in top_5_tokens:
+    print(sequence.replace(tokenizer.mask_token, tokenizer.decode([token])))
+```
+
 ## Set up
 [Conda](https://conda.io/) can be used to set up a virtual environment to use the software.
 
