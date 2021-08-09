@@ -205,3 +205,31 @@ To use the models with `transformers`, just provide the full path to your local 
 ```
 python scripts/inspect_lm_huggingface.py
 ```
+
+
+### Citation
+If you use this code or the released models for your research, please cite our paper as:  
+
+```
+@article{DBLP:journals/corr/abs-2107-12930,
+  author    = {James Barry and
+               Joachim Wagner and
+               Lauren Cassidy and
+               Alan Cowap and
+               Teresa Lynn and
+               Abigail Walsh and
+               M{\'{\i}}che{\'{a}}l J. {\'{O}} Meachair and
+               Jennifer Foster},
+  title     = {gaBERT - an Irish Language Model},
+  journal   = {CoRR},
+  volume    = {abs/2107.12930},
+  year      = {2021},
+  url       = {https://arxiv.org/abs/2107.12930},
+  archivePrefix = {arXiv},
+  eprint    = {2107.12930},
+  timestamp = {Fri, 30 Jul 2021 13:03:06 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2107-12930.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+```
