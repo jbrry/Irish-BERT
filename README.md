@@ -208,7 +208,8 @@ python scripts/inspect_lm_huggingface.py
 
 
 ### Citation
-If you use this code or the released models for your research, please cite our paper as:  
+If you use this code or the released models for your research, please cite
+our [paper](https://arxiv.org/abs/2107.12930) as:  
 
 ```
 @article{DBLP:journals/corr/abs-2107-12930,
@@ -231,5 +232,4 @@ If you use this code or the released models for your research, please cite our p
   biburl    = {https://dblp.org/rec/journals/corr/abs-2107-12930.bib},
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
-
 ```
