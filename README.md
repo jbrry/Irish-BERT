@@ -4,6 +4,7 @@ Repository to store helper scripts for creating an Irish BERT model.
 ## Pretrained models
 The pretrained models are available to download from https://huggingface.co/models
 *   **[`gaBERT v1`](https://huggingface.co/DCU-NLP/bert-base-irish-cased-v1)**: Uses BERT-Base architecture.
+*   **[`Tensorboard for gaBERT v1`](https://tensorboard.dev/experiment/Bogc165TQx2wVRRG146Lgw/#scalars)**
 
 ```
 from transformers import AutoModelWithLMHead, AutoTokenizer
