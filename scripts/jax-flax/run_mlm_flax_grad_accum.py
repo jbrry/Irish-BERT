@@ -603,21 +603,25 @@ if __name__ == "__main__":
             return loss
 
         grad_fn = jax.value_and_grad(loss_fn)
-        # ****
-        loss, grads = grad_fn(state.params)
-        #grads = jax.lax.pmean(grads, "batch")
+        loss, grad = grad_fn(state.params)
+
+        def divide_grads(accumulated_gradients, gradient_accumulation_steps):
+            return jax.tree_map(lambda ag: ag / gradient_accumulation_steps, accumulated_gradients)
+
+        def add_grads(current_grad, accumulated_gradients):
+            return jax.tree_map(lambda cg, ag: cg + ag, current_grad, accumulated_gradients)
+
         # the accumulated gradient, at step 0, this should just be 0s
-        # but the next step it should be current grad + last grad
-        grad_accum = jax.tree_multimap(lambda x, y: x + y, grads, state.grad_accum)
-        
+        grad_accum = add_grads(grad, state.grad_accum)
+
         def update_fn():
             """update the params, this function only gets called once we've reached gradient_accumulation_steps
             grad_accum has already been accumulated over n steps, so divide it by n"""
-            grads = jax.tree_map(lambda x: x / training_args.gradient_accumulation_steps, grad_accum)
-            grads = jax.lax.pmean(grads, "batch")
+            grad = divide_grads(grad_accum, training_args.gradient_accumulation_steps)
+            grad = jax.lax.pmean(grad, "batch")
             # comment on the below: state.step instead of passing a new variable optimizer_step=state.optimizer_step + 1?
             new_state = state.apply_gradients(
-                grads=grads, grad_accum=jax.tree_map(jnp.zeros_like, grads), optimizer_step=state.optimizer_step + 1
+                grads=grad, grad_accum=jax.tree_map(jnp.zeros_like, grad), optimizer_step=state.optimizer_step + 1
             ) # why do we pass two grads in here?
             return new_state
 
