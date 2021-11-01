@@ -19,7 +19,8 @@ def argparser():
     parser.add_argument('--encoding', default='utf-8')
     parser.add_argument('--random-seed', default=230)
     parser.add_argument('--do-shuffle', action='store_true')
-
+    parser.add_argument('--pass-empty', action='store_true')
+    
     return parser
 
 
@@ -33,6 +34,7 @@ def write_file(sentences, filename):
 def main(argv):
     args = argparser().parse_args(argv[1:])
 
+    print(f"passing empty lines: {args.pass_empty}")
     assert sum(args.ratios) == 1, "Train, valid and test ratios must sum to 1"
 
     if not os.path.exists(args.output_dir):
@@ -44,9 +46,16 @@ def main(argv):
         file_path = os.path.join(args.dataset_dir, fn)
         with open(file_path, 'rt', encoding=args.encoding, errors='ignore') as fi:
             for l in tqdm(fi):
-                sentence_bucket.append(l)
-        # Create empty line as document boundary.
-        sentence_bucket.append("\n")
+                # don't append empty lines by default
+                if args.pass_empty:
+                    sentence_bucket.append(l)
+                else:
+                    if len(l) > 0 and not l.isspace():
+                        sentence_bucket.append(l)
+        
+        if args.pass_empty:
+            # Create empty line as document boundary.
+            sentence_bucket.append("\n")
     print(f"found {len(sentence_bucket)} sentences")
 
     random.seed(args.random_seed)   
