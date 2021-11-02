@@ -1,5 +1,9 @@
 # See open PR: https://github.com/huggingface/transformers/pull/12675
 # from fork: https://github.com/patil-suraj/transformers/tree/flax-grad-accum
+#
+# Also, model restarts are not available in flax, see below for more info:
+# https://github.com/huggingface/transformers/issues/13965
+# https://github.com/gsarti/t5-flax-gcp/blob/34def61c98097224b4d9bca6c1e0832cd015f06a/run_t5_mlm_flax.py#L405
 
 
 #!/usr/bin/env python
