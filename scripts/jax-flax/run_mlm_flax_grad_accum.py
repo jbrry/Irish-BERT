@@ -31,6 +31,7 @@ import logging
 import os
 import sys
 import time
+import json
 from dataclasses import dataclass, field
 
 # You can also adapt this script on your own masked language modeling task. Pointers for this are left as comments.
@@ -46,6 +47,7 @@ import jax
 import jax.numpy as jnp
 import optax
 from flax import jax_utils, traverse_util
+from flax.serialization import to_bytes, from_bytes
 from flax.training import train_state
 from flax.training.common_utils import get_metrics, onehot, shard
 from huggingface_hub import Repository
@@ -764,7 +766,7 @@ if __name__ == "__main__":
                         state,
                         cur_step,
                         with_opt=True,
-                        push_to_hub=True
+                        push_to_hub=False
                     )
 
             # if cur_step % training_args.save_steps == 0 and cur_step > 0:
