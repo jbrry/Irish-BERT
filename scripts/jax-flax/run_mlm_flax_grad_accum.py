@@ -247,7 +247,6 @@ class FlaxDataCollatorForLanguageModeling:
         # The rest of the time (10% of the time) we keep the masked input tokens unchanged
         return inputs, labels
 
-
 def generate_batch_splits(samples_idx: jnp.ndarray, batch_size: int) -> jnp.ndarray:
     num_samples = len(samples_idx)
     samples_to_remove = num_samples % batch_size
@@ -272,6 +271,35 @@ def write_train_metric(summary_writer, train_metrics, train_time, step):
 def write_eval_metric(summary_writer, eval_metrics, step):
     for metric_name, value in eval_metrics.items():
         summary_writer.scalar(f"eval_{metric_name}", value, step)
+
+
+def save_checkpoint(model, save_dir, state, cur_step: int, with_opt: bool = True, push_to_hub: bool = False):
+    state = jax_utils.unreplicate(state)
+    if with_opt:
+        logger.info(f'Saving optimizer and training state in {save_dir}...')
+        with open(os.path.join(save_dir, "opt_state.msgpack"), "wb") as f:
+            f.write(to_bytes(state.opt_state))
+        with open(os.path.join(save_dir, "training_state.json"), "w") as f:
+            json.dump({"step": state.step.item()}, f)
+    logger.info(f'Saving model in {save_dir} {"and pushing it to HF Hub" if push_to_hub else ""}')
+    model.save_pretrained(
+        save_dir,
+        params=state.params,
+        push_to_hub=push_to_hub,
+        commit_message=f"Saving weights and logs of step {cur_step}",
+    )
+
+def restore_checkpoint(load_dir, state):
+    logger.info(f"Restoring checkpoint from {load_dir}")
+    with open(os.path.join(load_dir, "flax_model.msgpack"), "rb") as f:
+        params = from_bytes(state.params, f.read())
+    with open(os.path.join(load_dir, "opt_state.msgpack"), "rb") as f:
+        opt_state = from_bytes(state.opt_state, f.read())
+    with open(os.path.join(load_dir, "training_state.json"), "r") as f:
+        training_state = json.load(f)
+    step = training_state["step"]
+    logger.info(f"Checkpoint restored at step {step}")
+    return state.replace(step=step, params=params, opt_state=opt_state), step
 
 
 if __name__ == "__main__":
@@ -521,15 +549,21 @@ if __name__ == "__main__":
     # Store some constant
     num_epochs = int(training_args.num_train_epochs)
     train_batch_size = int(training_args.per_device_train_batch_size) * jax.device_count()
-    # ****
     total_batch_size = train_batch_size * training_args.gradient_accumulation_steps
     eval_batch_size = int(training_args.per_device_eval_batch_size) * jax.device_count()
 
-    #num_train_steps = len(tokenized_datasets["train"]) // train_batch_size * num_epochs
-    # ****
-    num_train_steps = len(tokenized_datasets["train"]) // total_batch_size * num_epochs # this should be a smaller number as our bs is now larger
+    num_train_steps = len(tokenized_datasets["train"]) // total_batch_size * num_epochs
 
-
+    # Create learning rate schedule
+    if training_args.warmup_steps:
+        warmup_steps = training_args.warmup_steps
+    elif training_args.warmup_ratio:
+        # See https://arxiv.org/pdf/2104.07705.pdf for rationale of choosing the peak at % of training steps
+        warmup_steps = int(training_args.warmup_ratio * num_train_steps)
+        logging.info(f"Warmup steps set to {100*training_args.warmup_ratio}% = {warmup_steps} of total train steps {num_train_steps}")
+    else:
+        raise Exception("Need either --warmup_steps or --warmup_ratio")
+        
     # Create learning rate schedule
     warmup_fn = optax.linear_schedule(
         init_value=0.0, end_value=training_args.learning_rate, transition_steps=training_args.warmup_steps
@@ -572,21 +606,17 @@ if __name__ == "__main__":
             mask=decay_mask_fn,
         )
 
-    # Setup train state
-    #state = train_state.TrainState.create(apply_fn=model.__call__, params=model.params, tx=optimizer)
-    # ****
-    # create a new class which subclasses the original so new parameters can be added.
-    class TrainState(train_state.TrainState):
-        grad_accum: jnp.ndarray
-        optimizer_step: int # comment: Would it maybe to just use state.step instead of creating a new optimizer_step?
+    if training_args.gradient_accumulation_steps > 1:
+        optimizer = optax.MultiSteps(optimizer, training_args.gradient_accumulation_steps)
+    grad_accum_steps = training_args.gradient_accumulation_steps
 
-    state = TrainState.create(
-        apply_fn=model.__call__,
-        params=model.params,
-        tx=optimizer,
-        grad_accum=jax.tree_map(jnp.zeros_like, model.params), # new param
-        optimizer_step=0, # new param
-    )
+    # Setup train state
+    state = train_state.TrainState.create(apply_fn=model.__call__, params=model.params, tx=optimizer)
+
+    if training_args.resume_from_checkpoint:
+        state, resume_step = restore_checkpoint(training_args.resume_from_checkpoint, state)
+    else:
+        resume_step = 0
 
     # Define gradient update step fn
     def train_step(state, batch, dropout_rng):
@@ -608,47 +638,12 @@ if __name__ == "__main__":
 
         grad_fn = jax.value_and_grad(loss_fn)
         loss, grad = grad_fn(state.params)
+        grad = jax.lax.pmean(grad, "batch")
+        new_state = state.apply_gradients(grads=grad)
 
-        def divide_grads(accumulated_gradients, gradient_accumulation_steps):
-            return jax.tree_map(lambda ag: ag / gradient_accumulation_steps, accumulated_gradients)
-
-        def add_grads(current_grad, accumulated_gradients):
-            return jax.tree_map(lambda cg, ag: cg + ag, current_grad, accumulated_gradients)
-
-        # the accumulated gradient, at step 0, this should just be 0s
-        grad_accum = add_grads(grad, state.grad_accum)
-
-        def update_fn():
-            """update the params, this function only gets called once we've reached gradient_accumulation_steps
-            grad_accum has already been accumulated over n steps, so divide it by n"""
-            grad = divide_grads(grad_accum, training_args.gradient_accumulation_steps)
-            grad = jax.lax.pmean(grad, "batch")
-            # comment on the below: state.step instead of passing a new variable optimizer_step=state.optimizer_step + 1?
-            new_state = state.apply_gradients(
-                grads=grad, grad_accum=jax.tree_map(jnp.zeros_like, grad), optimizer_step=state.optimizer_step + 1
-            ) # why do we pass two grads in here?
-            return new_state
-
-        # Does this make sure gradients are also accumulated for the first step?
-        # Is state.step = 1 the very first time?
-        # Yes it should probably be testing state.step+1 against the training_args.gradient_accumulation_steps
-        new_state = jax.lax.cond(
-            state.step % training_args.gradient_accumulation_steps == 0,
-            lambda _: update_fn(),
-            lambda _: state.replace(grad_accum=grad_accum, step=state.step + 1),
-            None,
-        )
-
-        #new_state = state.apply_gradients(grads=grad)
-
-        # metrics = jax.lax.pmean(
-        #     {"loss": loss, "learning_rate": linear_decay_lr_schedule_fn(state.step)}, axis_name="batch"
-        # )
-        # ****
         metrics = jax.lax.pmean(
-            {"loss": loss, "learning_rate": linear_decay_lr_schedule_fn(state.optimizer_step)}, axis_name="batch"
+            {"loss": loss, "learning_rate": linear_decay_lr_schedule_fn(state.step // grad_accum_steps)}, axis_name="batch"
         )
-
 
         return new_state, metrics, new_dropout_rng
 
@@ -679,6 +674,15 @@ if __name__ == "__main__":
     # Replicate the train state on each device
     state = jax_utils.replicate(state)
 
+    logger.info("***** Running training *****")
+    logger.info(f"  Num examples = {len(datasets['train'])}")
+    logger.info(f"  Num tokenized group examples {len(tokenized_datasets['train'])}")
+    logger.info(f"  Num Epochs = {num_epochs}")
+    logger.info(f"  Instantaneous batch size per device = {training_args.per_device_train_batch_size}")
+    logger.info(f"  Total train batch size (w. parallel, distributed and grad_accum) = {train_batch_size}")
+    logger.info(f"  Total optimization steps = {num_train_steps}")
+
+
     train_time = 0
     epochs = tqdm(range(num_epochs), desc=f"Epoch ... (1/{num_epochs})", position=0)
     for epoch in epochs:
@@ -706,7 +710,7 @@ if __name__ == "__main__":
 
             cur_step = epoch * (num_train_samples // train_batch_size) + step
 
-            if cur_step % training_args.logging_steps == 0 and cur_step > 0:
+            if cur_step % training_args.logging_steps * grad_accum_steps == 0 and cur_step > 0:
                 # Save metrics
                 train_metric = jax_utils.unreplicate(train_metric)
                 train_time += time.time() - train_start
@@ -714,12 +718,15 @@ if __name__ == "__main__":
                     write_train_metric(summary_writer, train_metrics, train_time, cur_step)
 
                 epochs.write(
-                    f"Step... ({cur_step} | Loss: {train_metric['loss']}, Learning Rate: {train_metric['learning_rate']})"
+                    f"Step... ({cur_step} | Loss: {train_metric['loss'].mean()}, Learning Rate: {train_metric['learning_rate'].mean()})"
                 )
 
                 train_metrics = []
 
-            if cur_step % training_args.eval_steps == 0 and cur_step > 0:
+
+                train_metrics = []
+
+            if cur_step % training_args.eval_steps * grad_accum_steps == 0 and cur_step > 0:
                 # ======================== Evaluating ==============================
                 num_eval_samples = len(tokenized_datasets["validation"])
                 eval_samples_idx = jnp.arange(num_eval_samples)
@@ -748,12 +755,24 @@ if __name__ == "__main__":
                 if has_tensorboard and jax.process_index() == 0:
                     write_eval_metric(summary_writer, eval_metrics, cur_step)
 
-            if cur_step % training_args.save_steps == 0 and cur_step > 0:
+            if cur_step % training_args.save_steps * grad_accum_steps == 0 and cur_step > 0:
                 # save checkpoint after each epoch and push checkpoint to the hub
                 if jax.process_index() == 0:
-                    params = jax.device_get(jax.tree_map(lambda x: x[0], state.params))
-                    model.save_pretrained(training_args.output_dir, params=params)
-                    tokenizer.save_pretrained(training_args.output_dir)
-                    if training_args.push_to_hub:
-                        repo.push_to_hub(commit_message=f"Saving weights and logs of step {cur_step}", blocking=False)
+                    save_checkpoint(
+                        model,
+                        training_args.output_dir,
+                        state,
+                        cur_step,
+                        with_opt=True,
+                        push_to_hub=True
+                    )
+
+            # if cur_step % training_args.save_steps == 0 and cur_step > 0:
+            #     # save checkpoint after each epoch and push checkpoint to the hub
+            #     if jax.process_index() == 0:
+            #         params = jax.device_get(jax.tree_map(lambda x: x[0], state.params))
+            #         model.save_pretrained(training_args.output_dir, params=params)
+            #         tokenizer.save_pretrained(training_args.output_dir)
+            #         if training_args.push_to_hub:
+            #             repo.push_to_hub(commit_message=f"Saving weights and logs of step {cur_step}", blocking=False)
 
