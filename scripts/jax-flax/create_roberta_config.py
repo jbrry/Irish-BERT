@@ -10,5 +10,5 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-config = RobertaConfig.from_pretrained("roberta-base", vocab_size=30000)
+config = RobertaConfig.from_pretrained("irish-roberta-base", vocab_size=50265)
 config.save_pretrained(f"./{args.out}")

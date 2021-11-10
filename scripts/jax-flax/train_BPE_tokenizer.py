@@ -41,7 +41,7 @@ MASK = "<mask>"
 # And then train
 tokenizer.train(
     files,
-    vocab_size=30000,
+    vocab_size=50265,
     min_frequency=2,
     show_progress=True,
     special_tokens=[BOS, PAD, EOS, UNK, MASK],
