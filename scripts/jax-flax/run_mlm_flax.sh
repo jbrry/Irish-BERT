@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # This script is to be ran on Google Cloud TPU
 # Instructions to set up the TPU and GCE environment: https://cloud.google.com/tpu/docs/jax-quickstart-tpu-vm
 #
@@ -42,28 +41,27 @@ if [ ! -f $OUTPUT_DIR/train.txt ]; then
         # train, valid, and test ratios are 0.9, 0.1 and 0 (i.e. no test)
         python ../create_train_val_test_files.py \
                 --dataset-dir $OUTPUT_DIR/filtered-texts/ \
-                --ratios 0.95 0.05 0.0 \
+                --ratios 0.98 0.02 0.0 \
                 --output-dir $OUTPUT_DIR
 fi
 
-export NUM_EPOOCHS=20   # Total number of training epochs
-export WARMUP_STEPS=1000   # Warmup the learning rate over this many updates
+export WARMUP_STEPS=10000   # Warmup the learning rate over this many updates
 export TOKENS_PER_SAMPLE=128   # Max sequence length
 
-LM_PATH="./transformers/examples/flax/language-modeling"
+#LM_PATH="./transformers/examples/flax/language-modeling"
 TRAIN_PATH="$OUTPUT_DIR/train.txt"
 VALIDATION_PATH="$OUTPUT_DIR/valid.txt"
 
 if [ ! -f $OUTPUT_DIR/tokenizer.json ]; then
         echo "Training tokenizer"
-        python train_byte-level_BPE_tokenizer.py --files "$OUTPUT_DIR/train.txt" --out "$OUTPUT_DIR"
+        python train_BPE_tokenizer.py --files "$OUTPUT_DIR/train.txt" --out "$OUTPUT_DIR"
 fi
 
 echo "Creating config"
-python create_roberta_config.py
+python create_roberta_config.py --out "$OUTPUT_DIR"
 
 echo "Running training"
-python "$LM_PATH/run_mlm_flax.py" \
+python "./run_mlm_flax_grad_accum.py" \
     --output_dir="$OUTPUT_DIR" \
     --model_type="roberta" \
     --config_name="$OUTPUT_DIR" \
@@ -71,15 +69,19 @@ python "$LM_PATH/run_mlm_flax.py" \
     --train_file="$TRAIN_PATH" \
     --validation_file="$VALIDATION_PATH" \
     --do_train --do_eval \
+    --preprocessing_num_workers 64 \
     --max_seq_length="$TOKENS_PER_SAMPLE" \
     --weight_decay="0.01" \
-    --per_device_train_batch_size="128" \
-    --per_device_eval_batch_size="128" \
+    --per_device_train_batch_size="32" \
+    --per_device_eval_batch_size="32" \
     --overwrite_output_dir \
     --warmup_steps="$WARMUP_STEPS" \
-    --num_train_epochs=20 \
+    --num_train_epochs=40 \
+    --learning_rate=1e-4 \
     --adam_beta1="0.9" \
     --adam_beta2="0.98" \
-    --logging_steps="1000" \
-    --save_steps="1000" \
-    --eval_steps="1000"
+    --logging_steps="5000" \
+    --save_steps="5000" \
+    --eval_steps="5000" \
+    --line_by_line
+
