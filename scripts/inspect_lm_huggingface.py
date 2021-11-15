@@ -208,9 +208,9 @@ def main():
             for index, output in enumerate(outputs[:opt_top_k]):
                 rank = index + 1
                 if opt_output_tsv:
-                    print(f"{rank}\t{output['token_str']}\t{output['score']}\t{output['token']}")
+                    print(f"{rank}\t{output['token_str']}\t{output['score']}\t{output['token']}\t{output['sequence']}")
                 else:
-                    print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}")
+                    print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}, sequence: {output['sequence']}")
                     #print('Token: %(token_str)r, score: %(score).9f, id: %(token)s' %output)
             print()
         # else:
