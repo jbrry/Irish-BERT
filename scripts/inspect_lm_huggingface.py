@@ -37,6 +37,7 @@ name2path = {
     'gambert':   ('local', 'models/multilingual_bert/output/pytorch/???/',),
     'wikibert':  ('repo',  'TurkuNLP/wikibert-base-ga-cased',),
     'wikibertdl': ('local',  'models/TurkuNLP/wikibert-base-ga-cased',),
+    'xlmr':      ('repo',  'xlm-roberta-base',),
 }
 
 def print_usage():
@@ -180,24 +181,28 @@ def main():
     else:
         tokeniser = AutoTokenizer.from_pretrained(model_path_or_name)
         model = AutoModelWithLMHead.from_pretrained(model_path_or_name)
-    assert '[MASK]' == tokeniser.mask_token
+    if '[MASK]' != tokeniser.mask_token:
+        print('*** Warning: Mask token is %s. ***' %tokeniser.mask_token)
     # check tokeniser is cased
     encoded = tokeniser('A')
     if tokeniser.convert_ids_to_tokens(encoded['input_ids'])[1] != 'A':
-        raise ValueError('Tokeniser does not seem to be cased')
+        print('*** Warning: Tokeniser does not seem to be cased. ***')
     for masked_line in masked_lines:
         #if opt_use_pipeline:
         for mask_multiplier in range(1, 1+opt_max_masks):
             #print('multiplier', mask_multiplier)
             multi_mask = mask_multiplier * '[MASK]'
             multi_masked_line = masked_line.replace('[MASK]', multi_mask)
+            if '[MASK]' != tokeniser.mask_token:
+                # for xml-r
+                multi_masked_line = masked_line.replace('[MASK]', tokeniser.mask_token)
             print(multi_masked_line)
             if opt_print_subwords:
                 encoded = tokeniser(multi_masked_line)
                 print(tokeniser.convert_ids_to_tokens(encoded['input_ids']))
-            if not '[MASK]' in masked_line:
+            if not tokeniser.mask_token in multi_masked_line:
                 break
-            outputs = nlp(multi_masked_line)
+            outputs = nlp(multi_masked_line, top_k = opt_top_k)
             if opt_output_tsv:
                 print('Rank\tToken\tScore\tID')
             for index, output in enumerate(outputs[:opt_top_k]):
@@ -206,6 +211,7 @@ def main():
                     print(f"{rank}\t{output['token_str']}\t{output['score']}\t{output['token']}")
                 else:
                     print(f"Token: {output['token_str']}, score: {output['score']}, id: {output['token']}")
+                    #print('Token: %(token_str)r, score: %(score).9f, id: %(token)s' %output)
             print()
         # else:
         #    raise NotImplementedError
