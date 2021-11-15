@@ -207,6 +207,8 @@ To use the models with `transformers`, just provide the full path to your local 
 python scripts/inspect_lm_huggingface.py
 ```
 
+### Limitations and bias
+Some data used to pretrain gaBERT and gaELECTRA was scraped from the web which potentially contains ethically problematic text (bias, hate, adult content, etc.). Consequently, downstream tasks/applications using gaBERT should be thoroughly tested with respect to ethical considerations.
 
 ### Citation
 If you use this code or the released models for your research, please cite
