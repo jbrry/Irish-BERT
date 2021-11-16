@@ -191,8 +191,8 @@ def main():
         encoded = tokeniser(test_char)
         result  = tokeniser.convert_ids_to_tokens(encoded['input_ids'])[1]
         if not result.endswith(test_char):
-            print('*** Warning: Tokeniser does not seem to be cased, "%s" becomes "%s". ***' %(
-                test_char, result
+            print('*** Warning: Tokeniser does not seem to be %s, "%s" becomes "%s". ***' %(
+                test_description, test_char, result
             ))
     for masked_line in masked_lines:
         #if opt_use_pipeline:
