@@ -183,10 +183,17 @@ def main():
         model = AutoModelWithLMHead.from_pretrained(model_path_or_name)
     if '[MASK]' != tokeniser.mask_token:
         print('*** Warning: Mask token is %s. ***' %tokeniser.mask_token)
-    # check tokeniser is cased
-    encoded = tokeniser('A')
-    if tokeniser.convert_ids_to_tokens(encoded['input_ids'])[1] != 'A':
-        print('*** Warning: Tokeniser does not seem to be cased. ***')
+    # check tokeniser properties
+    for test_char, test_description in [
+        ('A',      'cased'),
+        ('\u00e9', 'accented'),
+    ]:
+        encoded = tokeniser(test_char)
+        result  = tokeniser.convert_ids_to_tokens(encoded['input_ids'])[1]
+        if not result.endswith(test_char):
+            print('*** Warning: Tokeniser does not seem to be cased, "%s" becomes "%s". ***' %(
+                test_char, result
+            ))
     for masked_line in masked_lines:
         #if opt_use_pipeline:
         for mask_multiplier in range(1, 1+opt_max_masks):
