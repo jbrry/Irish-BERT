@@ -236,3 +236,6 @@ our [paper](https://arxiv.org/abs/2107.12930) as:
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 ```
+
+A revised version of this paper will appear at LREC in June 2022.
+
