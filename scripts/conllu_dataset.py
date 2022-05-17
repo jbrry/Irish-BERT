@@ -25,6 +25,9 @@ head_column = 6
 label_column = 7
 
 def hex2base62(h):
+    ''' convert hexadecimal string to Base62 with least-significant
+        digit first (which can be zero)
+    '''
     s = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
     i = int(h, 16)
     if not i:
@@ -33,8 +36,13 @@ def hex2base62(h):
     while i:
         d = i % 62
         digits.append(s[d])
-        i = int(i/62)
+        i = i // 62
     return ''.join(digits)
+    # Note: For most-significant digit first order, one should
+    #       call digits.reverse() as appendleft() with
+    #       collections.deque has a ~ 70% higher peak memory
+    #       usage and digits.insert(0, s[d]) takes 12% longer
+    #       (tested with inputs of 200 KiB to 500 KiB)
 
 class ConlluSentence(basic_dataset.Sentence):
 
