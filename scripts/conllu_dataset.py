@@ -30,6 +30,7 @@ def hex2base62(h):
     '''
     s = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
     i = int(h, 16)
+    assert i >= 0
     if not i:
         return '0'
     digits = []
