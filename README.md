@@ -214,28 +214,41 @@ Some data used to pretrain gaBERT and gaELECTRA was scraped from the web which p
 If you use this code or the released models for your research, please cite
 our [paper](https://arxiv.org/abs/2107.12930) as:  
 
+James Barry,
+Joachim Wagner,
+Lauren Cassidy,
+Alan Cowap,
+Teresa Lynn,
+Abigail Walsh,
+Mícheál J. Ó Meachair and 
+Jennifer Foster.
+(2022).
+gaBERT - an Irish Language Model.
+In
+*Proceedings of the 13th Conference on Language Resources and Evaluation (LREC 2022)*,
+pages 4774–4788,
+Marseille, France, 20-25 June 2022, European Language Resources Association (ELRA).
+
 ```
-@article{DBLP:journals/corr/abs-2107-12930,
+@InProceedings{barry-etal-2022-gabert,
   author    = {James Barry and
                Joachim Wagner and
                Lauren Cassidy and
                Alan Cowap and
                Teresa Lynn and
                Abigail Walsh and
-               M{\'{\i}}che{\'{a}}l J. {\'{O}} Meachair and
+               {\'{O}} Meachair, M{\'{\i}}che{\'{a}}l J.   and
                Jennifer Foster},
   title     = {gaBERT - an Irish Language Model},
-  journal   = {CoRR},
-  volume    = {abs/2107.12930},
-  year      = {2021},
-  url       = {https://arxiv.org/abs/2107.12930},
-  archivePrefix = {arXiv},
-  eprint    = {2107.12930},
-  timestamp = {Fri, 30 Jul 2021 13:03:06 +0200},
-  biburl    = {https://dblp.org/rec/journals/corr/abs-2107-12930.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+  year      = {2022},
+  url       = {https://aclanthology.org/2022.lrec-1.511}
+  biburl    = {http://www.lrec-conf.org/proceedings/lrec2022/bib/2022.lrec-1.511.bib},
+  booktitle      = {Proceedings of the Language Resources and Evaluation Conference},
+  month          = {June},
+  year           = {2022},
+  address        = {Marseille, France},
+  publisher      = {European Language Resources Association},
+  pages     = {4774--4788},
 }
 ```
-
-A revised version of this paper will appear at LREC in June 2022.
 
