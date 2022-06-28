@@ -242,7 +242,6 @@ Marseille, France, 20-25 June 2022, European Language Resources Association (ELR
   title     = {gaBERT - an Irish Language Model},
   year      = {2022},
   url       = {https://aclanthology.org/2022.lrec-1.511}
-  biburl    = {http://www.lrec-conf.org/proceedings/lrec2022/bib/2022.lrec-1.511.bib},
   booktitle      = {Proceedings of the Language Resources and Evaluation Conference},
   month          = {June},
   year           = {2022},
@@ -251,4 +250,7 @@ Marseille, France, 20-25 June 2022, European Language Resources Association (ELR
   pages     = {4774--4788},
 }
 ```
+
+The paper URL given in above bibtex currently produces a "404 not found" error but should
+be ready shortly.
 
