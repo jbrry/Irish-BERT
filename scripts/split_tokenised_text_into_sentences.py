@@ -38,7 +38,7 @@ Options:
 
     --verbose               Add line numbers and empty lines to output
 
-    --wrap  NUMBER          Warp output at NUMBER characters. Does not apply
+    --wrap  NUMBER          Wrap output at NUMBER characters. Does not apply
                             to debugging output. (Default: no wrapping)
 
     --random  NUMBER        At each recursion, perform a split at a random
@@ -71,11 +71,12 @@ abbreviations = set([
 
 roman_numbers = set()
 
-# code for wite_roman() from
+# code for write_roman() from
 # https://stackoverflow.com/questions/28777219/basic-program-to-convert-integer-to-roman-numerals
 # user:2548721 NullDev "Data Aberration" https://twitter.com/nulldeviance https://github.com/jerome-montino
 
 def write_roman(num):
+    assert 0 < num < 25000
     roman = collections.OrderedDict()
     roman[1000] = "M"
     roman[900] = "CM"
@@ -120,7 +121,7 @@ def get_first_letter_category(s, skip_enumeration = False):
     for c in s:
         category = unicodedata.category(c)
         if category.startswith('L'):
-            return category
+            return category   # 'Ll' = lowercase letter, 'Lu' = uppercase letter
     return None
 
 def contains_letter(s):
