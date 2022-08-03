@@ -57,10 +57,10 @@ Then install this repository:
 git clone https://github.com/jbrry/Irish-BERT.git
 
 # install wiki-bert-pipeline
-git clone https://github.com/jbrry/wiki-bert-pipeline
+git clone https://github.com/jbrry/wiki-bert-pipeline.git --branch v0.1.0
 
 # optionally install OpusFilter (see below)
-git clone https://github.com/Helsinki-NLP/OpusFilter.git
+git clone https://github.com/jbrry/OpusFilter.git --branch 1.1.0
 ```
 
 This should produce the below directory structure. In general, we will download all external repositories in the root directory `ga_BERT`.
@@ -72,7 +72,7 @@ ga_BERT
 └───OpusFilter 
 ```
 
-We use our forked version of the [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline) to create our vocabulary and pre-training data for BERT/ELECTRA. Please follow the instructions to set up the `wiki-bert-pipeline` in its README. If you want to include [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter) filtering, please install `OpusFilter` following the instructions in its README. Note that the `VariKN` and `eflomal` dependencies are not required for our purposes. To run `OpusFilter` on non-parallel data, switch to the `nlingual-rebase` branch in the `OpusFilter` repository. 
+The above links will download our forked versions of the [wiki-bert-pipeline](https://github.com/jbrry/wiki-bert-pipeline) which supports processing external corpora, and is used to create our vocabulary and pre-training data for BERT/ELECTRA. Please follow the instructions to set up the `wiki-bert-pipeline` in its README. OpusFilter filtering is optional, the above link will clone our forked version of [OpusFilter](https://github.com/Helsinki-NLP/OpusFilter) which contains a release of the `nlingual-rebase` branch that supprts filtering non-parallel texts. If you want to include OpusFilter filtering, please follow the instructions in its README. Note that the `VariKN` and `eflomal` dependencies are not required for our purposes.
 
 There are some other pieces of software you will need to download. We use [rclone](https://rclone.org/) to download files from Google Drive. You will need to download and configure `rclone` to download the `oscar` corpus as well as the files we have collated on Google Drive (bear in mind, these scripts won't work for you if you do not have access to our shared folder on Google Drive). For external researchers outside of this project, these scripts may not be of much relevance to you but they can be modified to work with your own data.
 
