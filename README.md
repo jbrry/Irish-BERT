@@ -241,7 +241,7 @@ Marseille, France, 20-25 June 2022, European Language Resources Association (ELR
                Jennifer Foster},
   title     = {gaBERT - an Irish Language Model},
   year      = {2022},
-  url       = {https://aclanthology.org/2022.lrec-1.511}
+  url       = {https://aclanthology.org/2022.lrec-1.511},
   booktitle      = {Proceedings of the Language Resources and Evaluation Conference},
   month          = {June},
   year           = {2022},
