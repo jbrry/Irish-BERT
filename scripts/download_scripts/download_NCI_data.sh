@@ -12,6 +12,8 @@ OUTFILE=${OUTDIR}/NCI_v2.txt
 
 mkdir -p $OUTDIR
 
+# @JF you will need to removed the shared option and adjust the path to Theme A DCU
+
 if [[ -n $(rclone lsf --drive-shared-with-me "gdrive:Theme A DCU" 2> /dev/null) ]]; then
     THEME_A_DCU="gdrive:Theme A DCU"
 else

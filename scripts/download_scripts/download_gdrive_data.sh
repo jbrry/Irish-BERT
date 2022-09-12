@@ -8,6 +8,8 @@ echo "Downloading data from Google Drive ..."
 OUTDIR=data/ga/gdrive
 mkdir -p $OUTDIR
 
+# @JF you will need to removed the shared option and adjust the path to Theme A DCU
+
 rclone copy --drive-shared-with-me "gdrive:Theme A DCU/Irish_Data/" $OUTDIR --bwlimit 1000M --transfers 1
 
 echo "Done"
