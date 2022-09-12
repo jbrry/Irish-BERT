@@ -9,10 +9,10 @@ echo "Downloading twitter data from Google Drive ..."
 OUTDIR=data/ga/twitter/raw
 mkdir -p $OUTDIR
 
-if [[ -n $(rclone lsf "gdrive:Theme A DCU" 2> /dev/null) ]]; then
+if [[ -n $(rclone lsf --drive-shared-with-me "gdrive:Theme A DCU" 2> /dev/null) ]]; then
     THEME_A_DCU="gdrive:Theme A DCU"
 else
-    if [[ -n $(rclone lsf "gdrive:Theme A/Theme A DCU" 2> /dev/null) ]]; then
+    if [[ -n $(rclone lsf --drive-shared-with-me "gdrive:Theme A/Theme A DCU" 2> /dev/null) ]]; then
         THEME_A_DCU="gdrive:Theme A/Theme A DCU"
     else
         echo "Theme A DCU folder not found"
@@ -20,7 +20,7 @@ else
     fi
 fi
 
-rclone copy "gdrive:Theme A DCU/Irish_Data/Tweets/" $OUTDIR --bwlimit 1000M --transfers 1
+rclone copy --drive-shared-with-me "gdrive:Theme A DCU/Irish_Data/Tweets/" $OUTDIR --bwlimit 1000M --transfers 1
 
 cd $OUTDIR
 rm README.md

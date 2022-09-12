@@ -8,7 +8,7 @@ echo "Downloading data from Google Drive ..."
 OUTDIR=data/ga/gdrive
 mkdir -p $OUTDIR
 
-rclone copy "gdrive:Theme A DCU/Irish_Data/" $OUTDIR --bwlimit 1000M --transfers 1
+rclone copy --drive-shared-with-me "gdrive:Theme A DCU/Irish_Data/" $OUTDIR --bwlimit 1000M --transfers 1
 
 echo "Done"
 

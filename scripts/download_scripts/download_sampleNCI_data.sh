@@ -21,10 +21,10 @@ mkdir -p $OUTDIR
 
 echo "Locating data on Google Drive ..."
 
-if [[ -n $(rclone lsf "gdrive:Theme A DCU" 2> /dev/null) ]]; then
+if [[ -n $(rclone lsf --drive-shared-with-me "gdrive:Theme A DCU" 2> /dev/null) ]]; then
     THEME_A_DCU="gdrive:Theme A DCU"
 else
-    if [[ -n $(rclone lsf "gdrive:Theme A/Theme A DCU" 2> /dev/null) ]]; then
+    if [[ -n $(rclone lsf --drive-shared-with-me "gdrive:Theme A/Theme A DCU" 2> /dev/null) ]]; then
         THEME_A_DCU="gdrive:Theme A/Theme A DCU"
     else
         echo "Theme A DCU folder not found"
@@ -44,7 +44,7 @@ done
 
 echo "Downloading data from Google Drive ..."
 
-rclone cat \
+rclone cat --drive-shared-with-me \
     "${THEME_A_DCU}/Irish_Data/ForasNaGaeilge/9MqDsdf834ms2NfS8L2joi7u_NCIv2.vert" \
     --bwlimit 1000M --transfers 1 | \
     scripts/extract_text_from_nci_vert.py | \

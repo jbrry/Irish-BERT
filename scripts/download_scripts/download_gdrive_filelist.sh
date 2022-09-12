@@ -7,6 +7,6 @@ echo "Downloading filelist from Google Drive ..."
 
 OUTDIR=data/ga/gdrive
 
-rclone copy "gdrive:Theme A DCU/Irish_Data/gdrive_filelist.csv" $OUTDIR
+rclone copy --drive-shared-with-me "gdrive:Theme A DCU/Irish_Data/gdrive_filelist.csv" $OUTDIR
 
 echo "Done"
