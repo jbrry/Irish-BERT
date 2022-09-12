@@ -5,10 +5,12 @@
 OUTDIR=data/ga/oscar/raw
 FILENAME=oscar-ga-unshuffled.tar.bz2
 
-if [[ -n $(rclone lsf "gdrive:Theme A DCU" 2> /dev/null) ]]; then
+# @JF you will need to removed the shared option and adjust the path to Theme A DCU
+
+if [[ -n $(rclone lsf --drive-shared-with-me "gdrive:Theme A DCU" 2> /dev/null) ]]; then
     THEME_A_DCU="gdrive:Theme A DCU"
 else
-    if [[ -n $(rclone lsf "gdrive:Theme A/Theme A DCU" 2> /dev/null) ]]; then
+    if [[ -n $(rclone lsf --drive-shared-with-me "gdrive:Theme A/Theme A DCU" 2> /dev/null) ]]; then
         THEME_A_DCU="gdrive:Theme A/Theme A DCU"
     else
         echo "Theme A DCU folder not found"
@@ -22,7 +24,7 @@ if [ -s "$OUTDIR" ]; then
 else
     mkdir -p ${OUTDIR}
     echo $'\n'"Downloading Oscar data for ga..."$'\n'
-    rclone copy "${THEME_A_DCU}/ga_BERT/BERT_Preprocessing/raw-corpora/${FILENAME}" $OUTDIR --bwlimit 1000M --transfers 1
+    rclone copy --drive-shared-with-me "${THEME_A_DCU}/ga_BERT/BERT_Preprocessing/raw-corpora/${FILENAME}" $OUTDIR --bwlimit 1000M --transfers 1
     if [ -f "${OUTDIR}/${FILENAME}" ]; then
         # unzip/untar download
         cd ${OUTDIR}
