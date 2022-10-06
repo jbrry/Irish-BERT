@@ -237,20 +237,17 @@ Marseille, France, 20-25 June 2022, European Language Resources Association (ELR
                Alan Cowap and
                Teresa Lynn and
                Abigail Walsh and
-               {\'{O}} Meachair, M{\'{\i}}che{\'{a}}l J.   and
+               {\'O} Meachair, M{\'\i}che{\'a}l J.  and
                Jennifer Foster},
-  title     = {gaBERT - an Irish Language Model},
+  title     = "ga{BERT} {---} an {I}rish Language Model",
   year      = {2022},
   url       = {https://aclanthology.org/2022.lrec-1.511},
-  booktitle      = {Proceedings of the Language Resources and Evaluation Conference},
-  month          = {June},
+  booktitle      = "Proceedings of the Thirteenth Language Resources and Evaluation Conference",
+  month          = jun,
   year           = {2022},
   address        = {Marseille, France},
   publisher      = {European Language Resources Association},
   pages     = {4774--4788},
 }
 ```
-
-The paper URL given in above bibtex currently produces a "404 not found" error but should
-be ready shortly.
 
