@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # (C) 2020 Dublin City University
@@ -101,7 +101,7 @@ def print_sentence(list_of_tokens):
             if source in text:
                 if count_events:
                     event_counter[('replace', source)] += text.count(source)
-                text = text.replace(source, unichr(int(token)).encode('utf-8'))
+                text = text.replace(source, chr(int(token)))
                 if debug_level >= 5:
                     text = '@@amp_#%s: %s' %(token, text)
         modified = backup != text
@@ -117,24 +117,24 @@ def print_sentence(list_of_tokens):
         text = '%d\t%s' %(start_of_sentence_line, text)
     if print_sentence_length:
         text = '%d\t%s' %(len(list_of_tokens), text)
-    print text
+    print(text)
 
 line_no = 0
 byte_offset = 0
 sentence = []
 while True:
     line_no += 1
-    line = sys.stdin.readline()
+    line = sys.stdin.buffer.readline()
     if not line:
         if sentence:
             print_sentence(sentence)
             if count_events:
                 event_counter[('text', 'segment')] += 1
         if debug_level >= 4:
-            print '@@EOF'
+            print('@@EOF')
         break
     try:
-        line.decode('UTF-8')
+        line.decode('UTF-8', 'strict')
         valid_utf8 = True
         if count_events:
             event_counter[('line', 'valid utf-8')] += 1
@@ -145,6 +145,7 @@ while True:
         if count_events:
             event_counter[('line', 'invalid utf-8')] += 1
     byte_offset += len(line)
+    line = line.decode('UTF-8', 'ignore')   # skip bytes that cannot be decoded
     if line.startswith('<'):
         if count_events:
             event_counter[('tag', line.split()[0])] += 1
@@ -152,13 +153,13 @@ while True:
             print_sentence(sentence)
             sentence = []
             if empty_line_after_sentence:
-                print
+                print()
         if empty_line_after_document and line.startswith('</doc>'):
-            print
+            print()
         if line.startswith('<doc') and (print_title or print_author) and valid_utf8:
             line = line.rstrip()
             if debug_level >= 4:
-                print line
+                print(line)
             if ' & ' in line:
                 if debug_level >= 2:
                     sys.stderr.write('Found ` & ` in xml tag. Escaping it as ` &amp; `: %s\n' %line)
@@ -169,19 +170,19 @@ while True:
                 '<?xml version="1.0" encoding="utf-8"?>%s</doc>' %line
             ).attrib
             if debug_level >= 5:
-                print '@@attributes = ', doc_attributes
+                print('@@attributes = ', doc_attributes)
             if print_title and 'title' in doc_attributes:
                 if debug_level >= 5:
-                    print '@@title = ', doc_attributes['title'].encode('utf-8')
-                print doc_attributes['title'].encode('utf-8')
+                    print('@@title = ', doc_attributes['title'].encode('utf-8'))
+                print(doc_attributes['title'].encode('utf-8'))
                 if empty_line_after_sentence:
-                    print
+                    print()
             if print_author and 'author' in doc_attributes:
                 if debug_level >= 5:
-                    print '@@author = ', doc_attributes['author'].encode('utf-8')
-                print doc_attributes['author'].encode('utf-8')
+                    print('@@author = ', doc_attributes['author'].encode('utf-8'))
+                print(doc_attributes['author'].encode('utf-8'))
                 if empty_line_after_sentence:
-                    print
+                    print()
         if line.startswith('<g'):
             # glue tag or some other unsupported tag
             raise NotImplementedError
@@ -195,7 +196,7 @@ while True:
             event_counter[('text', 'input row')] += 1
 
 if debug_level >= 5:
-    print '@@EOL'
+    print('@@EOL')
 
 if count_events:
     for key in sorted(event_counter.keys()):
