@@ -41,9 +41,10 @@ while len(sys.argv) > 1 and sys.argv[1].startswith('--'):
     elif option == '--count-events':
         count_events = True
     elif option == '--quiet':
+        assert debug_level <= 1
         debug_level = 0
     elif option == '--verbose':
-        debug_level = 2
+        debug_level = max(2, debug_level + 1)
     elif option == '--debug':
         debug_level = 5
     elif option == '--debug-level':
@@ -156,10 +157,16 @@ while True:
                 print()
         if empty_line_after_document and line.startswith('</doc>'):
             print()
-        if line.startswith('<doc') and (print_title or print_author) and valid_utf8:
+        if line.startswith('<doc') and (print_title or print_author or debug_level >= 2) and valid_utf8:
             line = line.rstrip()
             if debug_level >= 4:
                 print(line)
+                if empty_line_after_sentence:
+                    print()
+            elif debug_level >= 2:
+                print('<doc>')
+                if empty_line_after_sentence:
+                    print()
             if ' & ' in line:
                 if debug_level >= 2:
                     sys.stderr.write('Found ` & ` in xml tag. Escaping it as ` &amp; `: %s\n' %line)
@@ -170,17 +177,17 @@ while True:
                 '<?xml version="1.0" encoding="utf-8"?>%s</doc>' %line
             ).attrib
             if debug_level >= 5:
-                print('@@attributes = ', doc_attributes)
+                print('@@attributes =', doc_attributes)
             if print_title and 'title' in doc_attributes:
                 if debug_level >= 5:
-                    print('@@title = ', doc_attributes['title'].encode('utf-8'))
-                print(doc_attributes['title'].encode('utf-8'))
+                    print('@@title =', doc_attributes['title'])
+                print(doc_attributes['title'])
                 if empty_line_after_sentence:
                     print()
             if print_author and 'author' in doc_attributes:
                 if debug_level >= 5:
-                    print('@@author = ', doc_attributes['author'].encode('utf-8'))
-                print(doc_attributes['author'].encode('utf-8'))
+                    print('@@author =', doc_attributes['author'])
+                print(doc_attributes['author'])
                 if empty_line_after_sentence:
                     print()
         if line.startswith('<g'):
