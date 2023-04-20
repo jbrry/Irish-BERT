@@ -212,7 +212,7 @@ Some data used to pretrain gaBERT and gaELECTRA was scraped from the web which p
 
 ### Citation
 If you use this code or the released models for your research, please cite
-our [paper](https://arxiv.org/abs/2107.12930) as:  
+our [paper](https://aclanthology.org/2022.lrec-1.511/) as:  
 
 James Barry,
 Joachim Wagner,
