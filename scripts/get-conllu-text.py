@@ -25,11 +25,11 @@ def print_usage():
 Processes conllu data from stdin and output tokenised text.
 Options:
     --min-length  NUMBER    Only copy sentences with at least NUMBER tokens
-                            (not containing tokens with an index containing
+                            (not counting tokens with an index containing
                             '.' or '-')
                             (Default: 0 = no limit)
     --max-length  NUMBER    Only copy sentences with at most NUMBER tokens
-                            (not containing tokens with an index containing
+                            (not counting tokens with an index containing
                             '.' or '-')
                             (Default: 0 = no limit)
     --pass  NUMBER_1
